@@ -7,6 +7,56 @@ from apps.arenas.models import Arena, ArenaParticipant, ArenaScore
 from apps.arenas.services import join_arena, start_arena_battle
 from apps.accounts.models import GuestParticipant
 from apps.matches.models import Match
+from apps.questions.models import Category
+
+
+def staff_required(view_func):
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated or not (request.user.is_staff or request.user.is_superuser):
+            messages.error(request, 'Bu sahifaga kirish huquqingiz yo\'q.')
+            return redirect('home')
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+
+@login_required
+@staff_required
+def arena_create(request):
+    categories = Category.objects.all()
+    if request.method == 'POST':
+        title = request.POST.get('title', '').strip()
+        description = request.POST.get('description', '').strip()
+        category_id = request.POST.get('category') or None
+        start_time = request.POST.get('start_time')
+        end_time = request.POST.get('end_time')
+        duration_minutes = int(request.POST.get('duration_minutes', 60))
+        questions_per_match = int(request.POST.get('questions_per_match', 5))
+        max_participants = int(request.POST.get('max_participants', 100))
+        difficulty = request.POST.get('difficulty', 'medium')
+        bot_enabled = request.POST.get('bot_enabled') == 'on'
+
+        if not title or not start_time or not end_time:
+            messages.error(request, 'Sarlavha, boshlanish va tugash vaqti majburiy.')
+            return render(request, 'arenas/create.html', {'categories': categories})
+
+        category = get_object_or_404(Category, id=category_id) if category_id else None
+        arena = Arena.objects.create(
+            title=title,
+            description=description,
+            category=category,
+            start_time=start_time,
+            end_time=end_time,
+            duration_minutes=duration_minutes,
+            questions_per_match=questions_per_match,
+            max_participants=max_participants,
+            difficulty=difficulty,
+            bot_enabled=bot_enabled,
+            is_active=True,
+            status='upcoming',
+        )
+        messages.success(request, f'✅ "{arena.title}" arenasi yaratildi!')
+        return redirect('arena_detail', arena_id=arena.id)
+    return render(request, 'arenas/create.html', {'categories': categories})
 
 
 def arena_list(request):

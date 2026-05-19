@@ -23,6 +23,10 @@
   </ul>
   <div class="navbar-actions">
     {% if user.is_authenticated %}
+      {% if user.is_staff or user.is_superuser %}
+        <a href="{% url 'question_create' %}" class="btn btn-primary btn-sm">+ Savol</a>
+        <a href="{% url 'arena_create' %}" class="btn btn-primary btn-sm">+ Arena</a>
+      {% endif %}
     <a href="{% url 'profile' %}" class="btn btn-secondary btn-sm">
       <span>{{ user.avatar_initial }}</span> {{ user.full_name|default:user.username }}
     </a>

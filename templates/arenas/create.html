@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}Arena yaratish | EduComp{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 800px; padding: 2rem 1rem;">
+    <h2>Yangi Arena yaratish (Admin)</h2>
+    
+    <form method="POST" class="card">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label>Arena nomi / Sarlavha</label>
+            <input type="text" name="title" class="form-control" required placeholder="Masalan: Python 1-oy Imtihoni">
+        </div>
+
+        <div class="form-group">
+            <label>Tavsif (Ixtiyoriy)</label>
+            <textarea name="description" class="form-control" rows="3"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Kategoriya (Ixtiyoriy)</label>
+            <select name="category" class="form-control">
+                <option value="">-- Barcha kategoriyalar aralash --</option>
+                {% for cat in categories %}
+                <option value="{{ cat.id }}">{{ cat.icon }} {{ cat.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+            <div style="flex: 1;">
+                <label>Boshlanish vaqti</label>
+                <input type="datetime-local" name="start_time" class="form-control" required>
+            </div>
+            <div style="flex: 1;">
+                <label>Tugash vaqti</label>
+                <input type="datetime-local" name="end_time" class="form-control" required>
+            </div>
+            <div style="flex: 1;">
+                <label>G'olibga maxpus vaqt (Davomiyligi) daqiqada</label>
+                <input type="number" name="duration_minutes" class="form-control" value="60">
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+            <div style="flex: 1;">
+                <label>1 ta o'yindagi savollar</label>
+                <input type="number" name="questions_per_match" class="form-control" value="5">
+            </div>
+            <div style="flex: 1;">
+                <label>Max ishtirokchilar</label>
+                <input type="number" name="max_participants" class="form-control" value="100">
+            </div>
+            <div style="flex: 1;">
+                <label>Daraja</label>
+                <select name="difficulty" class="form-control">
+                    <option value="easy">Oson</option>
+                    <option value="medium" selected>O'rta</option>
+                    <option value="hard">Qiyin</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem;">
+            <input type="checkbox" name="bot_enabled" id="bot_enabled" checked>
+            <label for="bot_enabled" style="margin: 0;">Botlar ruxsat etilganmi? (Raqib yo'q bo'lsa bot beradi)</label>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Arenani Yaratish</button>
+    </form>
+</div>
+{% endblock %}

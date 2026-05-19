@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block title %}Savol yaratish | EduComp{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 800px; padding: 2rem 1rem;">
+    <h2>Yangi savol qo'shish (Admin)</h2>
+    
+    <div class="card" style="margin-bottom: 2rem;">
+        <form method="POST" action="{% url 'category_create' %}" style="display: flex; gap: 1rem; align-items: flex-end;">
+            {% csrf_token %}
+            <div style="flex: 1;">
+                <label>Kategoriya nomi</label>
+                <input type="text" name="name" class="form-control" required placeholder="Masalan: Python">
+            </div>
+            <div style="flex: 1;">
+                <label>Belgisi (Emoji)</label>
+                <input type="text" name="icon" class="form-control" value="📚">
+            </div>
+            <button type="submit" class="btn btn-secondary">Kategoriya qo'shish</button>
+        </form>
+    </div>
+
+    <form method="POST" class="card">
+        {% csrf_token %}
+        <div class="form-group">
+            <label>Kategoriya</label>
+            <select name="category" class="form-control" required>
+                <option value="">-- Tanlang --</option>
+                {% for cat in categories %}
+                <option value="{{ cat.id }}">{{ cat.icon }} {{ cat.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Savol sarlavhasi</label>
+            <input type="text" name="title" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+            <label>Savol matni (To'liq)</label>
+            <textarea name="body" class="form-control" rows="4" required></textarea>
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+            <div style="flex: 1;">
+                <label>Turi</label>
+                <select name="question_type" class="form-control">
+                    <option value="single">Yagona tanlov</option>
+                    <option value="multiple">Ko'p tanlov</option>
+                </select>
+            </div>
+            <div style="flex: 1;">
+                <label>Darajasi</label>
+                <select name="difficulty" class="form-control">
+                    <option value="easy">Oson</option>
+                    <option value="medium" selected>O'rta</option>
+                    <option value="hard">Qiyin</option>
+                </select>
+            </div>
+            <div style="flex: 1;">
+                <label>Ball (Points)</label>
+                <input type="number" name="points" class="form-control" value="10">
+            </div>
+            <div style="flex: 1;">
+                <label>Holati</label>
+                <select name="status" class="form-control">
+                    <option value="published">Nashr qilingan</option>
+                    <option value="draft">Qoralama</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Tushuntirish (Ixtiyoriy)</label>
+            <textarea name="explanation" class="form-control" rows="2"></textarea>
+        </div>
+
+        <hr style="margin: 2rem 0;">
+        <h3>Javob variantlari</h3>
+        <p style="color: #666; font-size: 0.9rem;">Kamida 2 ta variant kiriting va to'g'ri javobni belgilang.</p>
+
+        {% for i in "123456"|make_list %}
+        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+            <div style="width: 30px; text-align: center; font-weight: bold;">{{ i }}.</div>
+            <input type="text" name="option_text_{{ i }}" class="form-control" style="flex: 1;" placeholder="Variant matni">
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                <input type="checkbox" name="option_correct_{{ i }}"> To'g'ri(✓)
+            </label>
+        </div>
+        {% endfor %}
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Savolni Saqlash</button>
+    </form>
+</div>
+{% endblock %}

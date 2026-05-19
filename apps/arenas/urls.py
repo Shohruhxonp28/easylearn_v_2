@@ -3,6 +3,7 @@ from . import views
 
 urlpatterns = [
     path('', views.arena_list, name='arena_list'),
+    path('create/', views.arena_create, name='arena_create'),
     path('<int:arena_id>/', views.arena_detail, name='arena_detail'),
     path('<int:arena_id>/join/', views.arena_join, name='arena_join'),
     path('<int:arena_id>/live/', views.arena_live, name='arena_live'),
