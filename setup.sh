@@ -17,13 +17,13 @@ python manage.py migrate
 
 # Seed demo data (superuser + questions)
 python manage.py shell << 'PYEOF'
-from accounts.models import Student
-from questions.models import Category, Question, QuestionOption
-from matches.models import BotProfile
+from apps.accounts.models import User
+from apps.questions.models import Category, Question, QuestionOption
+from apps.matches.models import BotProfile
 
 # Superuser
-if not Student.objects.filter(username='admin').exists():
-    Student.objects.create_superuser('admin', 'admin@example.com', 'admin123')
+if not User.objects.filter(username='admin').exists():
+    User.objects.create_superuser('admin', 'admin@example.com', 'admin123')
     print("Superuser: admin / admin123")
 
 # Bots
