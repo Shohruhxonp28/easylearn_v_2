@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}{{ arena.title }} — EduComp{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px">
+      <div>
+        <div style="margin-bottom:8px">
+          <span class="badge {% if arena.status == 'live' %}badge-live{% elif arena.status == 'upcoming' %}badge-warning{% else %}badge-secondary{% endif %}">
+            {% if arena.status == 'live' %}🔴 LIVE{% elif arena.status == 'upcoming' %}⏳ Upcoming{% else %}✅ Finished{% endif %}
+          </span>
+        </div>
+        <h1>{{ arena.title }}</h1>
+        {% if arena.description %}<p>{{ arena.description }}</p>{% endif %}
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        {% if arena.status == 'live' %}
+        <a href="{% url 'arena_join' arena.id %}" class="btn btn-danger btn-lg">🔴 Join Arena!</a>
+        {% endif %}
+        <a href="{% url 'arena_leaderboard' arena.id %}" class="btn btn-outline">Leaderboard</a>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="container page-content">
+  <div class="grid grid-3" style="margin-bottom:32px">
+    <div class="stat-card"><div class="stat-value">{{ arena.start_time|date:"H:i" }}</div><div class="stat-label">Start Time</div></div>
+    <div class="stat-card"><div class="stat-value">{{ arena.end_time|date:"H:i" }}</div><div class="stat-label">End Time</div></div>
+    <div class="stat-card"><div class="stat-value text-primary">{{ arena.participant_count }}</div><div class="stat-label">Participants</div></div>
+  </div>
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="card-header"><h3 style="font-weight:700">Arena Info</h3></div>
+      <div class="card-body">
+        <table style="width:100%;border-collapse:collapse">
+          <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 0;color:var(--text-secondary)">Category</td><td style="padding:10px 0;font-weight:600">{{ arena.category.name|default:"All" }}</td></tr>
+          <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 0;color:var(--text-secondary)">Difficulty</td><td style="padding:10px 0;font-weight:600">{{ arena.difficulty|title }}</td></tr>
+          <tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 0;color:var(--text-secondary)">Questions/Match</td><td style="padding:10px 0;font-weight:600">{{ arena.questions_per_match }}</td></tr>
+          <tr><td style="padding:10px 0;color:var(--text-secondary)">Bot Matches</td><td style="padding:10px 0;font-weight:600">{% if arena.bot_enabled %}Enabled{% else %}Disabled{% endif %}</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><h3 style="font-weight:700">Top 5 Leaderboard</h3></div>
+      <div class="card-body" style="padding:8px">
+        {% for score in scores %}
+        <div class="leaderboard-row">
+          <div class="rank rank-{{ forloop.counter }}">{{ forloop.counter }}</div>
+          <div class="avatar avatar-sm">{{ score.participant.display_name|slice:":2"|upper }}</div>
+          <div class="leaderboard-name">{{ score.participant.display_name }}</div>
+          <div class="lb-points">{{ score.points }}</div>
+        </div>
+        {% empty %}
+        <p class="text-muted text-center" style="padding:24px">No participants yet</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

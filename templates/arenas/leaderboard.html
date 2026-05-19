@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}Leaderboard — {{ arena.title }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <h1>🏆 {{ arena.title }} — Leaderboard</h1>
+    <p>Final standings for this arena event</p>
+  </div>
+</div>
+<div class="container page-content" style="max-width:800px">
+  <div class="card">
+    {% if scores %}
+    <!-- Top 3 podium -->
+    {% with scores|slice:":3" as top3 %}
+    <div style="display:flex;justify-content:center;align-items:flex-end;gap:16px;padding:40px 24px;background:linear-gradient(135deg,var(--primary-light),#EDE9FE);border-bottom:1px solid var(--border)">
+      {% for score in top3 %}
+        {% if forloop.counter == 2 %}
+        <div style="text-align:center;order:-1">
+          <div style="font-size:2rem;margin-bottom:8px">🥈</div>
+          <div class="avatar" style="margin:0 auto 8px">{{ score.participant.display_name|slice:":2"|upper }}</div>
+          <div style="font-weight:700;font-size:.9rem">{{ score.participant.display_name }}</div>
+          <div style="font-size:1.5rem;font-weight:800;color:var(--primary)">{{ score.points }}</div>
+          <div style="background:var(--surface);border-radius:4px;height:80px;margin-top:8px;width:80px;margin-left:auto;margin-right:auto"></div>
+        </div>
+        {% elif forloop.counter == 1 %}
+        <div style="text-align:center">
+          <div style="font-size:2.5rem;margin-bottom:8px">🥇</div>
+          <div class="avatar avatar-lg" style="margin:0 auto 8px;background:linear-gradient(135deg,#F59E0B,#D97706)">{{ score.participant.display_name|slice:":2"|upper }}</div>
+          <div style="font-weight:800">{{ score.participant.display_name }}</div>
+          <div style="font-size:2rem;font-weight:800;color:var(--primary)">{{ score.points }}</div>
+          <div style="background:var(--surface);border-radius:4px;height:120px;margin-top:8px;width:80px;margin-left:auto;margin-right:auto"></div>
+        </div>
+        {% elif forloop.counter == 3 %}
+        <div style="text-align:center">
+          <div style="font-size:2rem;margin-bottom:8px">🥉</div>
+          <div class="avatar" style="margin:0 auto 8px">{{ score.participant.display_name|slice:":2"|upper }}</div>
+          <div style="font-weight:700;font-size:.9rem">{{ score.participant.display_name }}</div>
+          <div style="font-size:1.5rem;font-weight:800;color:var(--primary)">{{ score.points }}</div>
+          <div style="background:var(--surface);border-radius:4px;height:60px;margin-top:8px;width:80px;margin-left:auto;margin-right:auto"></div>
+        </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+    {% endwith %}
+    {% endif %}
+    <!-- Full list -->
+    <div style="padding:8px">
+      {% for score in scores %}
+      <div class="leaderboard-row" style="border-bottom:1px solid var(--border)">
+        <div class="rank rank-{{ forloop.counter }}">{{ forloop.counter }}</div>
+        <div class="avatar avatar-sm">{{ score.participant.display_name|slice:":2"|upper }}</div>
+        <div class="leaderboard-name">{{ score.participant.display_name }}</div>
+        <div class="leaderboard-stats">
+          <div class="lb-stat"><div class="lb-stat-val text-success">{{ score.wins }}</div><div class="lb-stat-label">Wins</div></div>
+          <div class="lb-stat"><div class="lb-stat-val text-danger">{{ score.losses }}</div><div class="lb-stat-label">Loss</div></div>
+          <div class="lb-stat"><div class="lb-stat-val">{{ score.draws }}</div><div class="lb-stat-label">Draw</div></div>
+          <div class="lb-stat"><div class="lb-stat-val">{{ score.total_matches }}</div><div class="lb-stat-label">Played</div></div>
+        </div>
+        <div class="lb-points">{{ score.points }}</div>
+      </div>
+      {% empty %}
+      <p class="text-muted text-center" style="padding:40px">No participants yet</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}EduComp{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+{% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="{% url 'home' %}" class="navbar-brand">⚡ Edu<span>Comp</span></a>
+  <ul class="navbar-nav">
+    <li><a href="{% url 'duel_lobby' %}" class="nav-link">⚔️ Duel</a></li>
+    <li><a href="{% url 'arena_list' %}" class="nav-link">🏟️ Arena</a></li>
+    {% if user.is_authenticated %}
+    <li><a href="{% url 'dashboard' %}" class="nav-link">Dashboard</a></li>
+    {% endif %}
+  </ul>
+  <div class="navbar-actions">
+    {% if user.is_authenticated %}
+    <a href="{% url 'profile' %}" class="btn btn-secondary btn-sm">
+      <span>{{ user.avatar_initial }}</span> {{ user.full_name|default:user.username }}
+    </a>
+    <a href="{% url 'logout' %}" class="btn btn-outline btn-sm">Logout</a>
+    {% else %}
+    <a href="{% url 'login' %}" class="btn btn-secondary btn-sm">Login</a>
+    <a href="{% url 'register' %}" class="btn btn-primary btn-sm">Sign Up</a>
+    {% endif %}
+  </div>
+</nav>
+
+{% if messages %}
+<div class="messages">
+  {% for message in messages %}
+  <div class="message message-{{ message.tags }}">
+    {% if message.tags == 'success' %}✅{% elif message.tags == 'error' %}❌{% elif message.tags == 'warning' %}⚠️{% else %}ℹ️{% endif %}
+    {{ message }}
+  </div>
+  {% endfor %}
+</div>
+<script>setTimeout(()=>{document.querySelectorAll('.message').forEach(m=>m.remove())},4000)</script>
+{% endif %}
+
+{% block content %}{% endblock %}
+
+<footer class="footer">
+  <p>⚡ EduComp — Competitive Learning Platform &copy; 2025</p>
+</footer>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

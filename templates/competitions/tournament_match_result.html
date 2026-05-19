@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Tournament Match Result{% endblock %}
+{% block content %}
+<div style="max-width:560px;margin:0 auto">
+  <div class="result-hero">
+    <div class="result-emoji">{% if advanced %}🏆{% else %}😔{% endif %}</div>
+    <div class="result-title {% if advanced %}win{% else %}loss{% endif %}">
+      {% if advanced %}You Advanced!{% else %}Eliminated{% endif %}
+    </div>
+    {% if match %}
+    <div class="result-scores">
+      <div class="result-score-box"><div class="result-score-label">You</div><div class="result-score-value mine">{{ my_score }}</div></div>
+      <div class="result-vs">vs</div>
+      <div class="result-score-box"><div class="result-score-label">{{ opponent_name }}</div><div class="result-score-value theirs">{{ opp_score }}</div></div>
+    </div>
+    {% else %}
+    <p style="color:var(--gray-400);margin-top:16px">BYE — you advance automatically</p>
+    {% endif %}
+  </div>
+  <div style="display:flex;gap:10px;justify-content:center">
+    <a href="{% url 'tournament_bracket' tournament.id %}" class="ec-btn ec-btn-warning ec-btn-lg">📊 View Bracket</a>
+    <a href="{% url 'tournament_detail' tournament.id %}" class="ec-btn ec-btn-outline ec-btn-lg">Tournament Page</a>
+  </div>
+</div>
+{% endblock %}

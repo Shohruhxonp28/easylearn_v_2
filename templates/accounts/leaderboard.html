@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% block title %}Reytinglar — EduComp{% endblock %}
+{% block nav_lb %}active{% endblock %}
+{% block content %}
+
+<!-- Rankings Banner -->
+<div class="rankings-banner" style="background: linear-gradient(135deg, #F4F7FB 0%, #EAEFF5 100%); border: 1px solid var(--gray-200); border-radius: 20px; padding: 40px 32px; color: var(--gray-800); margin-bottom: 32px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 24px; box-shadow: var(--shadow-sm); position: relative; overflow: hidden;">
+  <div style="position: absolute; right: -30px; top: -30px; width: 200px; height: 200px; border-radius: 50%; background: rgba(26, 134, 240, 0.03); pointer-events: none;"></div>
+  
+  <div style="position: relative; z-index: 2;">
+    <h1 style="font-size: 2.25rem; font-weight: 800; margin: 0 0 10px 0; display: flex; align-items: center; gap: 12px; letter-spacing: -1.5px; color: var(--gray-900);">
+      📊 Global Reyting
+    </h1>
+    <p style="margin: 0; opacity: 0.85; font-size: 1.05rem; font-weight: 500;">Talabalarning bilim janglaridagi reyting va yutuqlar jadvali.</p>
+  </div>
+</div>
+
+<!-- Leaderboard Table Container -->
+<div class="ec-card" style="border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-md); border-color: var(--gray-200); background: white;">
+  <table class="ec-table">
+    <thead>
+      <tr>
+        <th style="width: 80px; text-align: center;">O'rin</th>
+        <th>Talaba</th>
+        <th>Maktab / Guruh</th>
+        <th style="text-align: center; width: 120px;">Reyting</th>
+        <th style="text-align: center;">Statistika (W/D/L)</th>
+        <th style="text-align: center; width: 100px;">Jami janglar</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in students %}
+      <tr style="background: {% if s == user %}#EFF6FF{% else %}transparent{% endif %}; transition: all 0.2s;">
+        <!-- Rank # Column -->
+        <td style="text-align: center; font-weight: 800;">
+          <div class="leaderboard-rank {% if forloop.counter == 1 %}gold{% elif forloop.counter == 2 %}silver{% elif forloop.counter == 3 %}bronze{% endif %}" style="width: 32px; height: 32px; font-size: 0.9rem; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%;">
+            {% if forloop.counter == 1 %}🥇
+            {% elif forloop.counter == 2 %}🥈
+            {% elif forloop.counter == 3 %}🥉
+            {% else %}{{ forloop.counter }}{% endif %}
+          </div>
+        </td>
+        
+        <!-- Student Column -->
+        <td>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div class="ec-avatar" style="width: 38px; height: 38px; font-size: 0.95rem; background: var(--primary-light); color: var(--primary); font-weight: 800; border-radius: 50%; border: 2px solid white; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
+              {{ s.username|first|upper }}
+            </div>
+            <div>
+              <div style="font-weight: 700; color: var(--gray-800); display: flex; align-items: center; gap: 6px; font-size: 0.95rem;">
+                {{ s.username }}
+                {% if s == user %}
+                <span class="ec-badge ec-badge-primary" style="font-size: 0.65rem; padding: 2px 6px; font-weight: 800; border-radius: 4px;">Siz</span>
+                {% endif %}
+              </div>
+              <!-- Rank badge unvon next to name -->
+              <div style="margin-top: 3px;">
+                <span style="background: {{ s.rank_info.bg }}; color: {{ s.rank_info.color }}; border: 1px solid {{ s.rank_info.color }}20; font-size: 0.65rem; font-weight: 800; padding: 1px 6px; border-radius: 4px; display: inline-flex; align-items: center; gap: 3px;">
+                  <span style="width: 5px; height: 5px; border-radius: 50%; background: {{ s.rank_info.color }}"></span>
+                  {{ s.rank_info.code }} {{ s.rank_info.name }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </td>
+        
+        <!-- School/Group Column -->
+        <td>
+          <div style="font-weight: 600; color: var(--gray-700); font-size: 0.88rem;">{{ s.school|default:"—" }}</div>
+          {% if s.group %}
+          <div style="font-size: 0.75rem; color: var(--gray-400); font-weight: 500; margin-top: 1px;">Guruh: {{ s.group }}</div>
+          {% endif %}
+        </td>
+        
+        <!-- Rating Column -->
+        <td style="text-align: center;">
+          <span class="ec-rating-pill" style="font-weight: 800; font-size: 1.05rem; padding: 4px 12px; border-radius: 8px;">
+            ⭐ {{ s.rating }}
+          </span>
+        </td>
+        
+        <!-- Stats Column -->
+        <td style="text-align: center; font-weight: 700; font-size: 0.9rem;">
+          <span style="color: var(--success); background: #DCFCE7; padding: 2px 8px; border-radius: 6px;">{{ s.wins }}W</span>
+          <span style="color: var(--gray-500); background: var(--gray-100); padding: 2px 8px; border-radius: 6px; margin: 0 4px;">{{ s.draws }}D</span>
+          <span style="color: var(--danger); background: #FEE2E2; padding: 2px 8px; border-radius: 6px;">{{ s.losses }}L</span>
+        </td>
+        
+        <!-- Total matches Column -->
+        <td style="text-align: center; font-weight: 600; color: var(--gray-400); font-size: 0.9rem;">
+          {{ s.total_matches }}
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="6" style="text-align: center; padding: 40px; color: var(--gray-400);">Hozircha foydalanuvchilar ro'yxati bo'sh. Birinchi bo'ling!</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

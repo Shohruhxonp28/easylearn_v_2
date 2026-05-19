@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}{{ arena.title }} — Leaderboard{% endblock %}
+{% block nav_arena %}active{% endblock %}
+{% block content %}
+<div class="ec-page-header">
+  <div style="display:flex;align-items:center;justify-content:space-between">
+    <div>
+      <h1 class="ec-page-title">🏆 {{ arena.title }}</h1>
+      <p class="ec-page-sub">Arena Leaderboard</p>
+    </div>
+    <a href="{% url 'arena_detail' arena.id %}" class="ec-btn ec-btn-outline">← Back</a>
+  </div>
+</div>
+<div class="ec-card">
+  <table class="ec-table">
+    <thead><tr><th>#</th><th>Student</th><th>Arena Points</th><th>W</th><th>L</th><th>D</th><th>Played</th></tr></thead>
+    <tbody>
+      {% for score in scores %}
+      <tr style="{% if score.student == user %}background:var(--primary-light){% endif %}">
+        <td><span class="leaderboard-rank {% if forloop.counter == 1 %}gold{% elif forloop.counter == 2 %}silver{% elif forloop.counter == 3 %}bronze{% endif %}" style="width:28px;height:28px;font-size:.8rem">
+          {% if forloop.counter <= 3 %}{% if forloop.counter == 1 %}🥇{% elif forloop.counter == 2 %}🥈{% else %}🥉{% endif %}{% else %}{{ forloop.counter }}{% endif %}
+        </span></td>
+        <td style="font-weight:700">{{ score.student.username }}{% if score.student == user %} <span class="ec-badge ec-badge-primary" style="font-size:.65rem">You</span>{% endif %}</td>
+        <td><strong style="color:var(--warning);font-size:1.1rem">{{ score.points }}</strong></td>
+        <td style="color:var(--success);font-weight:700">{{ score.wins }}</td>
+        <td style="color:var(--danger);font-weight:700">{{ score.losses }}</td>
+        <td style="color:var(--warning);font-weight:700">{{ score.draws }}</td>
+        <td style="color:var(--gray-400)">{{ score.matches_played }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7"><div class="ec-empty"><div class="ec-empty-icon">📊</div><div class="ec-empty-title">No scores yet</div></div></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

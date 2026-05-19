@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block title %}Duel Lobby — EduComp{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <h1>⚔️ Duel Lobby</h1>
+    <p>Challenge opponents 1v1. Choose your category and battle!</p>
+  </div>
+</div>
+<div class="container page-content">
+  <div class="grid grid-2">
+    <div>
+      <div class="card">
+        <div class="card-header"><h3 style="font-weight:700">Configure Your Duel</h3></div>
+        <div class="card-body">
+          <form method="post" action="{% url 'start_duel' %}">
+            {% csrf_token %}
+            <div class="form-group">
+              <label class="form-label">Category</label>
+              <select name="category" class="form-control form-select">
+                <option value="">All Categories</option>
+                {% for cat in categories %}
+                <option value="{{ cat.id }}">{{ cat.icon }} {{ cat.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Difficulty</label>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+                <label style="cursor:pointer">
+                  <input type="radio" name="difficulty" value="easy" style="display:none" class="diff-radio">
+                  <div class="option-btn" style="justify-content:center;flex-direction:column;gap:4px" data-diff="easy">
+                    <span style="font-size:1.5rem">😊</span><span style="font-size:.8rem;font-weight:700">Easy</span>
+                  </div>
+                </label>
+                <label style="cursor:pointer">
+                  <input type="radio" name="difficulty" value="medium" checked style="display:none" class="diff-radio">
+                  <div class="option-btn selected" style="justify-content:center;flex-direction:column;gap:4px" data-diff="medium">
+                    <span style="font-size:1.5rem">🤔</span><span style="font-size:.8rem;font-weight:700">Medium</span>
+                  </div>
+                </label>
+                <label style="cursor:pointer">
+                  <input type="radio" name="difficulty" value="hard" style="display:none" class="diff-radio">
+                  <div class="option-btn" style="justify-content:center;flex-direction:column;gap:4px" data-diff="hard">
+                    <span style="font-size:1.5rem">🔥</span><span style="font-size:.8rem;font-weight:700">Hard</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block btn-lg">⚔️ Find Opponent</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:24px">
+        <div class="card-header"><h3 style="font-weight:700">How Duels Work</h3></div>
+        <div class="card-body">
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <span style="font-size:1.5rem">🔍</span>
+              <div><strong>Find Opponent</strong><p class="text-muted" style="font-size:.875rem">System searches for available players</p></div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <span style="font-size:1.5rem">🤖</span>
+              <div><strong>No one? Bot steps in</strong><p class="text-muted" style="font-size:.875rem">Never wait — play against AI immediately</p></div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <span style="font-size:1.5rem">❓</span>
+              <div><strong>One question at a time</strong><p class="text-muted" style="font-size:.875rem">Answer, score points, see results live</p></div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <span style="font-size:1.5rem">🏆</span>
+              <div><strong>Win = +10 Rating</strong><p class="text-muted" style="font-size:.875rem">Climb the leaderboard!</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="background:linear-gradient(135deg,var(--primary-light),#EDE9FE);border:none">
+        <div class="card-body text-center" style="padding:32px">
+          <div style="font-size:3rem;margin-bottom:12px">🏟️</div>
+          <h3 style="font-weight:700;margin-bottom:8px">Try Arena Mode</h3>
+          <p class="text-muted" style="margin-bottom:16px">Battle multiple opponents in a live 1-hour event!</p>
+          <a href="{% url 'arena_list' %}" class="btn btn-primary">View Arenas</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.querySelectorAll('.diff-radio').forEach(radio => {
+  radio.addEventListener('change', () => {
+    document.querySelectorAll('[data-diff]').forEach(el => el.classList.remove('selected'));
+    radio.closest('label').querySelector('[data-diff]').classList.add('selected');
+  });
+});
+document.querySelectorAll('[data-diff]').forEach(el => {
+  el.addEventListener('click', () => {
+    el.closest('label').querySelector('input').checked = true;
+    document.querySelectorAll('[data-diff]').forEach(e => e.classList.remove('selected'));
+    el.classList.add('selected');
+  });
+});
+</script>
+{% endblock %}

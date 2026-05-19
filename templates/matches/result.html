@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block title %}Match Result — EduComp{% endblock %}
+{% block content %}
+<div class="container page-content" style="max-width:800px">
+  <div class="card">
+    <div class="result-hero">
+      <div class="result-trophy">
+        {% if match.winner == 'draw' %}🤝
+        {% elif match.winner == 'player1' and player and match.player1 == player %}🏆
+        {% elif match.winner == 'player2' and player and match.player2 == player %}🏆
+        {% elif match.winner != 'draw' %}😔
+        {% else %}🏆{% endif %}
+      </div>
+      <div class="result-title">
+        {% if match.winner == 'draw' %}It's a Draw!
+        {% elif match.winner == 'player1' %}{{ match.get_player1_display }} Wins!
+        {% elif match.winner == 'player2' %}{{ match.get_player2_display }} Wins!
+        {% else %}Match Over{% endif %}
+      </div>
+
+      <div class="result-scores">
+        <div class="result-player">
+          <div class="result-player-name">{{ match.get_player1_display }}</div>
+          <div class="result-player-score {% if match.winner == 'player1' %}text-primary{% endif %}">{{ match.player1_score }}</div>
+        </div>
+        <div class="result-vs">VS</div>
+        <div class="result-player">
+          <div class="result-player-name">{{ match.get_player2_display }}</div>
+          <div class="result-player-score {% if match.winner == 'player2' %}text-primary{% endif %}">{{ match.player2_score }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <h3 style="font-weight:700;margin-bottom:16px">Question Breakdown</h3>
+      {% for qr in q_results %}
+      <div class="q-result-item">
+        <div class="q-result-icon {% if qr.submission and qr.submission.is_correct %}correct{% elif qr.submission %}wrong{% else %}skipped{% endif %}">
+          {% if qr.submission and qr.submission.is_correct %}✅
+          {% elif qr.submission %}❌
+          {% else %}⚪{% endif %}
+        </div>
+        <div class="q-result-content">
+          <div class="q-result-question">{{ qr.question.body|truncatechars:100 }}</div>
+          <div class="q-result-answer">
+            {% if qr.submission %}
+              <span {% if qr.submission.is_correct %}class="text-success"{% else %}class="text-danger"{% endif %}>
+                {% if qr.submission.is_correct %}✅ Correct{% else %}❌ Wrong{% endif %}
+              </span>
+              &bull; <strong>+{{ qr.submission.points_earned }} pts</strong>
+              {% if qr.submission.selected_options.all %}
+                <div style="margin-top:4px">Your answer:
+                  {% for opt in qr.submission.selected_options.all %}{{ opt.text }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                </div>
+              {% endif %}
+            {% else %}
+              <span class="text-muted">⏭ Skipped (time ran out)</span>
+            {% endif %}
+            {% if qr.question.explanation %}
+              <div style="margin-top:6px;padding:8px;background:var(--surface2);border-radius:6px;font-size:.8rem">
+                💡 {{ qr.question.explanation }}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+        <div>
+          {% if qr.submission and qr.submission.is_correct %}
+          <span class="badge badge-success">+{{ qr.submission.points_earned }}</span>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="card-footer" style="display:flex;gap:12px;flex-wrap:wrap">
+      {% if match.match_type == 'arena' and match.arena %}
+      <a href="{% url 'arena_live' match.arena.id %}" class="btn btn-danger">← Back to Arena</a>
+      {% endif %}
+      <a href="{% url 'duel_lobby' %}" class="btn btn-primary">⚔️ Play Again</a>
+      {% if user.is_authenticated %}
+      <a href="{% url 'dashboard' %}" class="btn btn-secondary">Dashboard</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

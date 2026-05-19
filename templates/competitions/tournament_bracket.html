@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}{{ tournament.title }} — Bracket{% endblock %}
+{% block nav_tournament %}active{% endblock %}
+{% block content %}
+<div class="ec-page-header">
+  <div style="display:flex;align-items:center;justify-content:space-between">
+    <div>
+      <h1 class="ec-page-title">📊 {{ tournament.title }}</h1>
+      <p class="ec-page-sub">Tournament Bracket</p>
+    </div>
+    <a href="{% url 'tournament_detail' tournament.id %}" class="ec-btn ec-btn-outline">← Back</a>
+  </div>
+</div>
+{% if rounds %}
+<div class="bracket-container">
+  {% for round in rounds %}
+  <div class="bracket-round">
+    <div class="bracket-round-title">Round {{ round.round_number }}{% if round.is_complete %} ✓{% endif %}</div>
+    {% for match in round.matches.all %}
+    <div class="bracket-match">
+      <div class="bracket-player {% if match.winner == match.player1 %}winner{% endif %} {% if not match.player1 %}bye{% endif %}">
+        {% if match.winner == match.player1 %}🏆 {% endif %}
+        {{ match.player1.username|default:"?" }}
+      </div>
+      {% if match.status != 'bye' %}
+      <div class="bracket-player {% if match.winner == match.player2 %}winner{% endif %}">
+        {% if match.winner == match.player2 %}🏆 {% endif %}
+        {{ match.player2.username|default:"TBD" }}
+      </div>
+      {% else %}
+      <div class="bracket-player bye">BYE</div>
+      {% endif %}
+      {% if match.status == 'active' %}
+      <div style="padding:6px 12px;font-size:.72rem;color:var(--danger);font-weight:700;background:var(--danger-light);text-align:center">🔴 In Progress</div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endfor %}
+
+  {% if tournament.status == 'finished' %}
+  <div class="bracket-round">
+    <div class="bracket-round-title" style="color:var(--warning)">🏆 Champion</div>
+    {% for round in rounds %}{% if forloop.last %}{% for m in round.matches.all %}{% if m.winner %}
+    <div class="bracket-match" style="border-color:var(--warning);background:#FFFBEB">
+      <div class="bracket-player winner" style="color:var(--warning);font-size:1rem">🥇 {{ m.winner.username }}</div>
+    </div>
+    {% endif %}{% endfor %}{% endif %}{% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% else %}
+<div class="ec-card"><div class="ec-empty"><div class="ec-empty-icon">📊</div><div class="ec-empty-title">Bracket not generated yet</div><div class="ec-empty-sub">Admin needs to start the tournament</div></div></div>
+{% endif %}
+{% endblock %}

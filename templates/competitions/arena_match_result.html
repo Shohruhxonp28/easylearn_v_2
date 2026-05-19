@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}Arena Result{% endblock %}
+{% block content %}
+<div style="max-width:600px;margin:0 auto">
+  <div class="result-hero">
+    <div class="result-emoji">{% if result == 'win' %}🏆{% elif result == 'loss' %}😔{% else %}🤝{% endif %}</div>
+    <div class="result-title {{ result }}">{% if result == 'win' %}Victory!{% elif result == 'loss' %}Defeat{% else %}Draw!{% endif %}</div>
+    <div class="result-scores">
+      <div class="result-score-box"><div class="result-score-label">You</div><div class="result-score-value mine">{{ my_score }}</div></div>
+      <div class="result-vs">vs</div>
+      <div class="result-score-box"><div class="result-score-label">{{ opponent_name }}</div><div class="result-score-value theirs">{{ opp_score }}</div></div>
+    </div>
+    <div><span class="rating-change-pill {{ result }}">🛡️ +{{ arena_pts }} Arena Points</span></div>
+  </div>
+  <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+    <a href="{% url 'arena_detail' arena.id %}" class="ec-btn ec-btn-primary ec-btn-lg">⚔️ Play Again</a>
+    <a href="{% url 'arena_leaderboard' arena.id %}" class="ec-btn ec-btn-outline ec-btn-lg">📊 Leaderboard</a>
+    <a href="{% url 'dashboard' %}" class="ec-btn ec-btn-outline ec-btn-lg">🏠 Dashboard</a>
+  </div>
+</div>
+{% endblock %}

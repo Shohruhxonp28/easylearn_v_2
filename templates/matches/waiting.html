@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}Waiting — EduComp{% endblock %}
+{% block content %}
+<div style="min-height:80vh;display:flex;align-items:center;justify-content:center">
+  <div style="text-align:center">
+    <div style="font-size:4rem;margin-bottom:16px;animation:spin 2s linear infinite">⌛</div>
+    <h2 style="font-weight:800;margin-bottom:8px">Finding Opponent...</h2>
+    <p class="text-muted">Searching for a worthy challenger</p>
+    <style>@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}</style>
+    <script>setTimeout(()=>location.reload(), 3000)</script>
+  </div>
+</div>
+{% endblock %}

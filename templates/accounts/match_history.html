@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}Match History — EduComp{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <h1>📋 Match History</h1>
+    <p>All your past battles</p>
+  </div>
+</div>
+<div class="container page-content">
+  <div class="card">
+    <div class="card-body" style="padding:0">
+      {% for match in matches %}
+      <a href="{% url 'match_result' match.id %}" style="text-decoration:none">
+        <div class="leaderboard-row" style="border-bottom:1px solid var(--border)">
+          <div style="flex:1">
+            <div style="font-weight:600;color:var(--text)">
+              {{ match.get_player1_display }} vs {{ match.get_player2_display }}
+            </div>
+            <div style="font-size:.85rem;color:var(--text-secondary)">
+              {{ match.category.name|default:"General" }} &bull; {{ match.ended_at|date:"M d, Y" }}
+            </div>
+          </div>
+          <div style="font-weight:800;font-size:1.1rem">{{ match.player1_score }} — {{ match.player2_score }}</div>
+          <div style="width:80px;text-align:right">
+            {% if match.winner == 'player1' and match.player1 == user %}<span class="badge badge-success">Win</span>
+            {% elif match.winner == 'player2' and match.player2 == user %}<span class="badge badge-success">Win</span>
+            {% elif match.winner == 'draw' %}<span class="badge badge-secondary">Draw</span>
+            {% else %}<span class="badge badge-danger">Loss</span>{% endif %}
+          </div>
+        </div>
+      </a>
+      {% empty %}
+      <p class="text-muted text-center" style="padding:40px">No matches yet. Start your first duel!</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

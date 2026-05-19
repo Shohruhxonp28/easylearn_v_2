@@ -1,0 +1,368 @@
+{% extends 'base.html' %}
+{% block title %}Duel Lobby — KEP.uz Style{% endblock %}
+{% block nav_duel %}active{% endblock %}
+{% block content %}
+
+<!-- KEP.uz Style Header Banner -->
+<div class="lobby-banner" style="background: linear-gradient(135deg, #1A86F0 0%, #00B4DB 100%); border-radius: 20px; padding: 40px 32px; color: white; margin-bottom: 32px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 24px; box-shadow: 0 10px 30px rgba(26, 134, 240, 0.15); position: relative; overflow: hidden;">
+  <div style="position: absolute; right: -50px; top: -50px; width: 250px; height: 250px; border-radius: 50%; background: rgba(255,255,255,0.06); pointer-events: none;"></div>
+  <div style="position: absolute; left: 20%; bottom: -80px; width: 150px; height: 150px; border-radius: 50%; background: rgba(255,255,255,0.04); pointer-events: none;"></div>
+  
+  <div style="position: relative; z-index: 2;">
+    <h1 style="font-size: 2.25rem; font-weight: 800; margin: 0 0 10px 0; display: flex; align-items: center; gap: 12px; letter-spacing: -1.5px;">
+      ⚡ Bellashuvlar
+    </h1>
+    <p style="margin: 0; opacity: 0.95; font-size: 1.05rem; font-weight: 500;">Tezkor bellashuv yarating yoki navbatga qo'shiling.</p>
+  </div>
+  
+  <div style="position: relative; z-index: 2; background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(16px); border-radius: 16px; padding: 18px 28px; display: flex; align-items: center; gap: 20px; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 8px 32px rgba(15, 23, 42, 0.08);">
+    <div>
+      <div style="font-size: 0.72rem; text-transform: uppercase; font-weight: 800; opacity: 0.85; letter-spacing: 0.8px;">Sizning reytingingiz</div>
+      <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+        <span style="font-size: 2.2rem; font-weight: 900; line-height: 1; letter-spacing: -1px;">{{ user.rating }}</span>
+        <span style="background: {{ user.rank_info.bg }}; color: {{ user.rank_info.color }}; border: 1.5px solid {{ user.rank_info.color }}; padding: 2px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+          {{ user.rank_info.code }}
+        </span>
+      </div>
+    </div>
+    <div style="width: 1px; height: 44px; background: rgba(255,255,255,0.25);"></div>
+    <div>
+      <div style="font-size: 0.72rem; text-transform: uppercase; font-weight: 800; opacity: 0.85; letter-spacing: 0.8px;">Statistika</div>
+      <div style="font-size: 1rem; font-weight: 800; margin-top: 6px; display: flex; gap: 8px;">
+        <span style="color: #4ADE80; background: rgba(74,222,128,0.15); padding: 2px 8px; border-radius: 6px;">{{ user.wins }}W</span>
+        <span style="color: #E2E8F0; background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 6px;">{{ user.draws }}D</span>
+        <span style="color: #F87171; background: rgba(248,113,113,0.15); padding: 2px 8px; border-radius: 6px;">{{ user.losses }}L</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 320px;gap:28px;align-items:start">
+  <!-- Left Column -->
+  <div>
+    {% if active_match %}
+    <div class="ec-alert ec-alert-warning" style="justify-content:space-between; margin-bottom: 24px; padding: 16px 20px; border-radius: 12px; box-shadow: var(--shadow-sm);">
+      <span style="font-weight: 600; display: flex; align-items: center; gap: 8px;">⚡ Sizda davom etayotgan faol o'yin mavjud!</span>
+      <a href="{% url 'match_play' active_match.id %}" class="ec-btn ec-btn-warning" style="border-radius: 8px; font-weight: 700;">Davom ettirish →</a>
+    </div>
+    {% endif %}
+    {% if in_queue %}
+    <div class="ec-alert ec-alert-info" style="justify-content:space-between; margin-bottom: 24px; padding: 16px 20px; border-radius: 12px; box-shadow: var(--shadow-sm);">
+      <span style="font-weight: 600; display: flex; align-items: center; gap: 8px;">🕐 Kutish rejimi: <strong style="color:var(--primary)">{{ in_queue.category.name }}</strong> / {{ in_queue.difficulty|capfirst }}</span>
+      <a href="{% url 'leave_queue' %}" class="ec-btn ec-btn-outline" style="border-radius: 8px; font-weight: 700; background: white;">Navbatdan chiqish</a>
+    </div>
+    {% endif %}
+
+    <!-- Tabs Nav -->
+    <div class="ec-tabs" id="lobbyTabs">
+      <button class="ec-tab active" data-tab="tab-start" onclick="switchTab('tab-start','lobbyTabs')">⚡ Tez Start</button>
+      <button class="ec-tab" data-tab="tab-waiting" onclick="switchTab('tab-waiting','lobbyTabs')">👥 Kutilish Xonasi <span style="background:var(--primary);color:white;border-radius:20px;padding:2px 8px;font-size:.72rem;margin-left:6px;font-weight:800;">{{ waiting_room|length }}</span></button>
+      <button class="ec-tab" data-tab="tab-recent" onclick="switchTab('tab-recent','lobbyTabs')">📋 So'nggi Bellashuvlar</button>
+      {% if user.is_staff %}
+      <button class="ec-tab" data-tab="tab-create-question" onclick="switchTab('tab-create-question','lobbyTabs')" style="color: var(--primary); font-weight: 800;">➕ Savol Yaratish</button>
+      {% endif %}
+    </div>
+
+    <!-- Tab: Quick Start -->
+    <div class="ec-tab-panel active" id="tab-start">
+      <div class="ec-card" style="border-radius: 16px; box-shadow: var(--shadow-md);">
+        <div class="ec-card-header" style="background: var(--gray-50); border-bottom: 1px solid var(--gray-200); padding: 18px 24px; font-size: 1.05rem;">🎯 Jang konfiguratsiyasi</div>
+        <div class="ec-card-body" style="padding: 28px;">
+          <form method="post" action="{% url 'start_duel' %}">
+            {% csrf_token %}
+
+            <div class="ec-form-group" style="margin-bottom: 24px;">
+              <label class="ec-label" style="font-size: 0.95rem; margin-bottom: 10px; color: var(--gray-700);">📚 Raund mavzusi (Kategoriya)</label>
+              {% if categories %}
+              <div class="ec-option-group" style="gap: 10px;">
+                {% for cat in categories %}
+                <input type="radio" class="ec-option-input" name="category" id="cat_{{ cat.id }}" value="{{ cat.id }}" required>
+                <label class="ec-option-label" for="cat_{{ cat.id }}" style="padding: 10px 18px; border-radius: 10px; font-weight: 600;">{{ cat.name }}</label>
+                {% endfor %}
+              </div>
+              {% else %}
+              <div class="ec-alert ec-alert-warning">Tizimda savollar mavjud emas. Admin avval savol qo'shishi lozim.</div>
+              {% endif %}
+            </div>
+
+            <div class="ec-form-group" style="margin-bottom: 28px;">
+              <label class="ec-label" style="font-size: 0.95rem; margin-bottom: 10px; color: var(--gray-700);">🎚️ Qiyinchilik darajasi</label>
+              <div class="ec-option-group" style="gap: 10px;">
+                <input type="radio" class="ec-option-input" name="difficulty" id="diff_easy" value="easy">
+                <label class="ec-option-label success-label" for="diff_easy" style="padding: 10px 18px; border-radius: 10px; font-weight: 600;">🟢 Oson (Easy)</label>
+                <input type="radio" class="ec-option-input" name="difficulty" id="diff_medium" value="medium" checked>
+                <label class="ec-option-label warning-label" for="diff_medium" style="padding: 10px 18px; border-radius: 10px; font-weight: 600;">🟡 O'rta (Medium)</label>
+                <input type="radio" class="ec-option-input" name="difficulty" id="diff_hard" value="hard">
+                <label class="ec-option-label danger-label" for="diff_hard" style="padding: 10px 18px; border-radius: 10px; font-weight: 600;">🔴 Qiyin (Hard)</label>
+              </div>
+            </div>
+
+            <div style="background:#F0FDF4; border: 1px solid #DCFCE7; border-radius:12px; padding:16px; margin-bottom:28px; font-size:.88rem; color:#15803D; display:flex; align-items:center; gap:10px;">
+              <span>💡</span>
+              <span>Agar xuddi shu sozlamalarda kutayotgan boshqa talaba bo'lsa, siz u bilan o'ynaysiz. Aks holda, bot bilan jangga kirasiz.</span>
+            </div>
+
+            <button type="submit" class="ec-btn ec-btn-primary ec-btn-lg ec-btn-block" style="border-radius: 12px; font-size: 1.1rem; font-weight: 800; padding: 14px; box-shadow: 0 4px 15px rgba(26,134,240,0.2);" {% if not categories %}disabled{% endif %}>
+              ⚔️ Raqib topish & Jangni boshlash
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Waiting Room (KEP.uz Style Cards Grid) -->
+    <div class="ec-tab-panel" id="tab-waiting">
+      {% if waiting_room %}
+      <div style="display:grid; grid-template-columns: 1fr; gap:12px;">
+        {% for entry in waiting_room %}
+        <div class="lobby-card" style="background: white; border: 1px solid var(--gray-200); border-radius: 16px; padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; gap: 16px; box-shadow: var(--shadow-sm); transition: all 0.2s;">
+          <div style="display: flex; align-items: center; gap: 16px; flex: 1;">
+            <!-- Profile initial avatar -->
+            <div style="position: relative;">
+              <div class="ec-avatar" style="width: 52px; height: 52px; font-size: 1.25rem; background: var(--primary-light); color: var(--primary); font-weight: 800; border-radius: 50%; border: 2px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                {{ entry.student.username|first|upper }}
+              </div>
+            </div>
+            <!-- Details -->
+            <div>
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                <!-- KEP.uz style Rank Badge -->
+                <span style="background: {{ entry.student.rank_info.bg }}; color: {{ entry.student.rank_info.color }}; border: 1px solid {{ entry.student.rank_info.color }}40; font-size: 0.72rem; font-weight: 800; padding: 3px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; letter-spacing: 0.3px;">
+                  <span style="width: 6px; height: 6px; border-radius: 50%; background: {{ entry.student.rank_info.color }}"></span>
+                  {{ entry.student.rank_info.code }} {{ entry.student.rank_info.name }}
+                </span>
+                <span style="font-weight: 700; color: var(--gray-800); font-size: 1rem;">{{ entry.student.username }}</span>
+                <span style="color: var(--gray-400); font-size: 0.85rem; font-weight: 600;">(⭐ {{ entry.student.rating }})</span>
+              </div>
+              
+              <!-- Stat badges -->
+              <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 6px;">
+                <span style="background: var(--gray-50); border: 1px solid var(--gray-200); font-size: 0.75rem; color: var(--gray-600); padding: 2px 8px; border-radius: 6px;">5 ta savol</span>
+                <span style="background: var(--gray-50); border: 1px solid var(--gray-200); font-size: 0.75rem; color: var(--gray-600); padding: 2px 8px; border-radius: 6px;">30 soniya</span>
+                <span style="background: #FFFBEB; border: 1px solid #FEF3C7; font-size: 0.75rem; color: #D97706; padding: 2px 8px; border-radius: 6px; font-weight: 700;">{{ entry.category.name }}</span>
+                <span style="background: var(--primary-light); border: 1px solid var(--primary-dark)15; font-size: 0.75rem; color: var(--primary); padding: 2px 8px; border-radius: 6px; font-weight: 700;">{{ entry.difficulty|capfirst }}</span>
+              </div>
+              
+              <div style="font-size: 0.75rem; color: var(--gray-400); font-weight: 500;">{{ entry.joined_at|timesince }} oldin kirgan</div>
+            </div>
+          </div>
+          
+          <div>
+            <form method="post" action="{% url 'start_duel' %}">
+              {% csrf_token %}
+              <input type="hidden" name="category" value="{{ entry.category.id }}">
+              <input type="hidden" name="difficulty" value="{{ entry.difficulty }}">
+              <button type="submit" class="ec-btn ec-btn-primary" style="padding: 10px 22px; border-radius: 10px; font-size: 0.95rem; font-weight: 700; box-shadow: 0 4px 12px rgba(26,134,240,0.18);">Qabul qilish</button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="ec-card" style="border-radius: 16px;">
+        <div class="ec-empty" style="padding: 60px 20px;">
+          <div class="ec-empty-icon" style="font-size: 4rem;">👥</div>
+          <div class="ec-empty-title" style="font-size: 1.25rem;">Hozircha hech kim yo'q</div>
+          <div class="ec-empty-sub" style="font-size: 0.95rem; max-width: 360px; margin: 0 auto 20px;">"Tez Start" orqali yangi o'yin boshlang, tizim sizga avtomatik tarzda raqib qidiradi!</div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Tab: Recent Battles -->
+    <div class="ec-tab-panel" id="tab-recent">
+      {% if recent %}
+      <div class="ec-card" style="border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-md);">
+        <table class="ec-table">
+          <thead>
+            <tr><th>Raqib</th><th>Kategoriya</th><th>Natija</th><th>Hisob</th><th>Sana</th></tr>
+          </thead>
+          <tbody>
+            {% for m in recent %}
+            {% with student=user %}
+            <tr>
+              <td>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <div class="ec-avatar" style="width:28px; height:28px; font-size:.7rem; background: var(--gray-100); color: var(--gray-600);">
+                    {% if m.player1 == user %}{{ m.player2.username|default:m.bot.name|default:"Bot"|first|upper }}
+                    {% else %}{{ m.player1.username|first|upper }}{% endif %}
+                  </div>
+                  <strong style="color:var(--gray-800)">
+                    {% if m.player1 == user %}{{ m.player2.username|default:m.bot.name|default:"Bot" }}
+                    {% else %}{{ m.player1.username }}{% endif %}
+                  </strong>
+                </div>
+              </td>
+              <td><span class="ec-badge ec-badge-primary" style="background:#F1F5F9; color:var(--gray-700)">{{ m.category.name }}</span></td>
+              <td>
+                {% if m.is_draw %}<span class="ec-badge ec-badge-warning" style="font-weight: 700;">Durang</span>
+                {% elif m.winner == user %}<span class="ec-badge ec-badge-success" style="font-weight: 700;">G'alaba</span>
+                {% else %}<span class="ec-badge ec-badge-danger" style="font-weight: 700;">Mag'lubiyat</span>{% endif %}
+              </td>
+              <td style="font-weight:800; font-size: 1rem; color:var(--gray-900)">
+                {% if m.player1 == user %}{{ m.player1_score }} – {{ m.player2_score }}
+                {% else %}{{ m.player2_score }} – {{ m.player1_score }}{% endif %}
+              </td>
+              <td style="color:var(--gray-400); font-size:.8rem; font-weight: 500;">{{ m.ended_at|date:"d M, H:i" }}</td>
+            </tr>
+            {% endwith %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="ec-card" style="border-radius: 16px;"><div class="ec-empty" style="padding: 60px 20px;"><div class="ec-empty-icon" style="font-size: 3.5rem;">🎮</div><div class="ec-empty-title">So'nggi janglar topilmadi</div></div></div>
+      {% endif %}
+    </div>
+
+    <!-- Tab: Create Question (Only for Admin) -->
+    {% if user.is_staff %}
+    <div class="ec-tab-panel" id="tab-create-question">
+      <div class="ec-card" style="border-radius: 16px; box-shadow: var(--shadow-md);">
+        <div class="ec-card-header" style="background: var(--gray-50); border-bottom: 1px solid var(--gray-200); padding: 18px 24px; font-size: 1.05rem; font-weight: 800;">✏️ Yangi Savol (Test) Yaratish</div>
+        <div class="ec-card-body" style="padding: 28px;">
+          <form method="post" action="{% url 'admin_create_question' %}">
+            {% csrf_token %}
+            
+            <!-- Category dropdown -->
+            <div class="ec-form-group" style="margin-bottom: 18px;">
+              <label class="ec-label" style="font-weight: 700; font-size: 0.85rem; color: var(--gray-700); margin-bottom: 6px; display: block;">📚 Kategoriya (Mavzu)</label>
+              <select name="category" class="ec-input" style="width: 100%; border-radius: 8px; font-weight: 600;" required>
+                <option value="" disabled selected>Kategoriyani tanlang</option>
+                {% for cat in categories %}
+                <option value="{{ cat.id }}">{{ cat.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Question Title -->
+            <div class="ec-form-group" style="margin-bottom: 18px;">
+              <label class="ec-label" style="font-weight: 700; font-size: 0.85rem; color: var(--gray-700); margin-bottom: 6px; display: block;">📝 Savol sarlavhasi (Qisqa)</label>
+              <input type="text" name="title" class="ec-input" style="width: 100%; border-radius: 8px;" placeholder="Masalan: Python ro'yxatlari" required>
+            </div>
+
+            <!-- Question Body -->
+            <div class="ec-form-group" style="margin-bottom: 18px;">
+              <label class="ec-label" style="font-weight: 700; font-size: 0.85rem; color: var(--gray-700); margin-bottom: 6px; display: block;">✍️ Savol matni (To'liq)</label>
+              <textarea name="body" class="ec-input" style="width: 100%; border-radius: 8px; min-height: 100px; resize: vertical;" placeholder="Savol matnini bu yerga yozing..." required></textarea>
+            </div>
+
+            <!-- Difficulty and Points row -->
+            <div style="display: flex; gap: 16px; margin-bottom: 18px;">
+              <div style="flex: 1;">
+                <label class="ec-label" style="font-weight: 700; font-size: 0.85rem; color: var(--gray-700); margin-bottom: 6px; display: block;">🎚️ Qiyinchilik</label>
+                <select name="difficulty" class="ec-input" style="width: 100%; border-radius: 8px; font-weight: 600;">
+                  <option value="easy">Oson</option>
+                  <option value="medium" selected>O'rta</option>
+                  <option value="hard">Qiyin</option>
+                </select>
+              </div>
+              <div style="flex: 1;">
+                <label class="ec-label" style="font-weight: 700; font-size: 0.85rem; color: var(--gray-700); margin-bottom: 6px; display: block;">⭐ Ball</label>
+                <input type="number" name="points" class="ec-input" style="width: 100%; border-radius: 8px; font-weight: 700;" value="10" required>
+              </div>
+            </div>
+
+            <!-- Options A, B, C, D inputs -->
+            <div style="border-top: 1px solid var(--gray-100); margin-top: 24px; padding-top: 18px; margin-bottom: 18px;">
+              <label class="ec-label" style="font-weight: 800; font-size: 0.9rem; color: var(--gray-800); margin-bottom: 14px; display: block;">Javob variantlari</label>
+              
+              <div style="display:flex; flex-direction:column; gap:12px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <span style="font-weight:900; color:var(--primary); font-size:0.95rem; width:20px;">A.</span>
+                  <input type="text" name="option_a" class="ec-input" style="flex:1; border-radius: 8px; font-size:0.88rem;" placeholder="A variant matni" required>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <span style="font-weight:900; color:var(--primary); font-size:0.95rem; width:20px;">B.</span>
+                  <input type="text" name="option_b" class="ec-input" style="flex:1; border-radius: 8px; font-size:0.88rem;" placeholder="B variant matni" required>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <span style="font-weight:900; color:var(--primary); font-size:0.95rem; width:20px;">C.</span>
+                  <input type="text" name="option_c" class="flex:1; border-radius: 8px; font-size:0.88rem;" placeholder="C variant matni" required>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <span style="font-weight:900; color:var(--primary); font-size:0.95rem; width:20px;">D.</span>
+                  <input type="text" name="option_d" class="ec-input" style="flex:1; border-radius: 8px; font-size:0.88rem;" placeholder="D variant matni" required>
+                </div>
+              </div>
+            </div>
+
+            <!-- Correct Answer dropdown -->
+            <div class="ec-form-group" style="margin-bottom: 18px;">
+              <label class="ec-label" style="font-weight: 700; font-size: 0.85rem; color: var(--gray-700); margin-bottom: 6px; display: block;">🎯 To'g'ri javob kaliti</label>
+              <select name="correct_answer" class="ec-input" style="width: 100%; border-radius: 8px; font-weight: 900; color: #047857;" required>
+                <option value="" disabled selected>To'g'ri javobni belgilang</option>
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+                <option value="D">D</option>
+              </select>
+            </div>
+
+            <!-- Explanation -->
+            <div class="ec-form-group" style="margin-bottom: 28px;">
+              <label class="ec-label" style="font-weight: 700; font-size: 0.85rem; color: var(--gray-700); margin-bottom: 6px; display: block;">ℹ️ Izoh (Tushuntirish)</label>
+              <textarea name="explanation" class="ec-input" style="width: 100%; border-radius: 8px; min-height: 70px; resize: vertical;" placeholder="Nima uchun bu javob to'g'riligi haqida izoh (Ixtiyoriy)..."></textarea>
+            </div>
+
+            <button type="submit" class="ec-btn ec-btn-primary ec-btn-lg ec-btn-block" style="border-radius: 12px; font-size: 1.05rem; font-weight: 800; padding: 12px; box-shadow: 0 4px 15px rgba(26,134,240,0.2);">
+              💾 Savolni yaratish & Chop etish
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Right Column: Sidebar info -->
+  <div>
+    <!-- How it works Card -->
+    <div class="ec-card mb-4" style="border-radius: 16px; box-shadow: var(--shadow-md); border-color: var(--gray-200);">
+      <div class="ec-card-header" style="background: var(--gray-50); border-bottom: 1px solid var(--gray-200); font-weight: 800; font-size: 0.95rem; color: var(--gray-800);">ℹ️ Tizim qoidalari</div>
+      <div class="ec-card-body" style="padding: 20px; font-size:.88rem; color:var(--gray-600); line-height:1.8">
+        <div style="display:flex; gap:8px; margin-bottom:12px;">
+          <span style="font-weight:700; color:var(--primary);">1.</span>
+          <span>Kategoriya va darajani tanlab jangga navbatga turing.</span>
+        </div>
+        <div style="display:flex; gap:8px; margin-bottom:12px;">
+          <span style="font-weight:700; color:var(--primary);">2.</span>
+          <span>Raqib topilgach, 5 ta savoldan iborat duel boshlanadi.</span>
+        </div>
+        <div style="display:flex; gap:8px; margin-bottom:12px;">
+          <span style="font-weight:700; color:var(--primary);">3.</span>
+          <span>Savollarga <strong>navbatma-navbat</strong> javob berasiz.</span>
+        </div>
+        <div style="display:flex; gap:8px; margin-bottom:12px;">
+          <span style="font-weight:700; color:var(--primary);">4.</span>
+          <span>Yakunda reytingingiz o'zgarishini ko'rasiz.</span>
+        </div>
+        
+        <hr class="ec-divider" style="margin: 16px 0;">
+        
+        <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+          <span style="font-weight: 600;">🏆 G'alaba</span>
+          <strong style="color:var(--success);">+10 reyting</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+          <span style="font-weight: 600;">💔 Mag'lubiyat</span>
+          <strong style="color:var(--danger);">−5 reyting</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between;">
+          <span style="font-weight: 600;">🤝 Durang</span>
+          <strong style="color:var(--warning);">+2 reyting</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.lobby-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--primary) !important;
+  box-shadow: 0 6px 20px rgba(26, 134, 240, 0.06) !important;
+}
+</style>
+
+{% endblock %}

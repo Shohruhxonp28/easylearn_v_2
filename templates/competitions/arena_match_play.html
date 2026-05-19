@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% block title %}Arena Match — Q{{ current_idx|add:1 }}{% endblock %}
+{% block nav_arena %}active{% endblock %}
+{% block content %}
+
+<div class="ec-alert ec-alert-info" style="margin-bottom:16px">
+  🛡️ <strong>Arena:</strong> {{ arena.title }}
+</div>
+
+<div class="match-layout">
+  <!-- LEFT -->
+  <div class="match-sidebar-left">
+    <div class="player-card">
+      <div class="player-avatar p1">{{ match.player1.username|first|upper }}</div>
+      <div style="flex:1">
+        <div class="player-name">{{ match.player1.username }} {% if is_p1 %}<span class="ec-badge ec-badge-primary" style="font-size:.65rem">You</span>{% endif %}</div>
+        <div style="font-size:.75rem;color:var(--gray-400)">Player 1</div>
+      </div>
+    </div>
+    <div style="text-align:center;font-size:.75rem;font-weight:700;color:var(--gray-300);margin:4px 0">VS</div>
+    <div class="player-card">
+      <div class="player-avatar {% if match.bot %}bot{% else %}p2{% endif %}">
+        {% if match.bot %}🤖{% elif match.player2 %}{{ match.player2.username|first|upper }}{% else %}?{% endif %}
+      </div>
+      <div style="flex:1">
+        <div class="player-name">{{ opponent_name }}</div>
+        <div style="font-size:.75rem;color:var(--gray-400)">{% if match.bot %}Bot{% else %}Player 2{% endif %}</div>
+      </div>
+    </div>
+    <hr class="ec-divider">
+    <div style="font-size:.72rem;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Progress</div>
+    <div class="progress-steps">
+      {% for step in answered %}
+      <div class="progress-step {% if step.done and step.correct %}done-correct{% elif step.done %}done-wrong{% elif step.current %}current{% else %}upcoming{% endif %}">
+        <div class="step-dot"></div>Q{{ step.n }}
+        {% if step.done and step.correct %}✓{% elif step.done %}✗{% elif step.current %}← Now{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- CENTER -->
+  <div>
+    <form method="post" id="answerForm">
+      {% csrf_token %}
+      <div class="question-card">
+        <div class="question-header">
+          <span class="question-number">Question {{ current_idx|add:1 }} of {{ total }}</span>
+          <span class="ec-badge ec-badge-{{ diff_color }}">{{ match.difficulty|capfirst }}</span>
+        </div>
+        <div class="question-body">
+          <div class="question-title">{{ question.title }}</div>
+          {% if question.body %}<div class="question-text">{{ question.body }}</div>{% endif %}
+          <div class="answer-options">
+            {% for option in options %}
+            <div>
+              <input type="radio" class="answer-option" name="answer" id="opt_{{ option.label }}" value="{{ option.label }}" required>
+              <label class="answer-label" for="opt_{{ option.label }}">
+                <div class="answer-key">{{ option.label }}</div><span>{{ option.text }}</span>
+              </label>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="question-submit">
+          <div style="font-size:.85rem;color:var(--gray-400)">✅ {{ current_idx }}/{{ total }} answered</div>
+          <button type="submit" class="ec-btn ec-btn-primary ec-btn-lg" id="submitBtn" disabled>
+            {% if current_idx|add:1 == total %}🏁 Finish{% else %}Next →{% endif %}
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="match-sidebar-right">
+    <div class="ec-card mb-3" style="text-align:center;padding:20px">
+      <div style="font-size:.72rem;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">Time Left</div>
+      <div class="ec-timer-ring">
+        <svg width="80" height="80" viewBox="0 0 80 80"><circle class="bg" cx="40" cy="40" r="34"/><circle class="fill" id="timerCircle" cx="40" cy="40" r="34" stroke-dasharray="213.6" stroke-dashoffset="0"/></svg>
+        <div class="ec-timer-value" id="timerValue">30</div>
+      </div>
+    </div>
+    <div class="ec-card">
+      <div class="ec-card-header" style="font-size:.85rem">Arena Info</div>
+      <div class="ec-card-body" style="padding:16px;font-size:.85rem">
+        <div class="match-info-item"><div class="match-info-label">Arena</div><div class="match-info-value">{{ arena.title }}</div></div>
+        <div class="match-info-item"><div class="match-info-label">Category</div><div class="match-info-value">{{ arena.category.name }}</div></div>
+        <div class="match-info-item"><div class="match-info-label">Your Score</div><div class="match-info-value" style="font-size:1.4rem;font-weight:800;color:var(--primary)">{{ my_score }}</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+{% block extra_js %}
+<script>
+document.querySelectorAll('input[name="answer"]').forEach(r=>r.addEventListener('change',()=>document.getElementById('submitBtn').disabled=false));
+var t=30,circ=2*Math.PI*34,circle=document.getElementById('timerCircle'),display=document.getElementById('timerValue');
+circle.style.strokeDasharray=circ;
+var timer=setInterval(()=>{t--;display.textContent=t;circle.style.strokeDashoffset=circ*(1-t/30);if(t<=10){circle.style.stroke='#EF4444';display.style.color='#EF4444';}if(t<=0){clearInterval(timer);var opts=['A','B','C','D'];if(!document.querySelector('input[name="answer"]:checked')){document.querySelector('input[value="'+opts[Math.floor(Math.random()*4)]+'"]').checked=true;}document.getElementById('submitBtn').disabled=false;document.getElementById('answerForm').submit();}},1000);
+document.getElementById('answerForm').addEventListener('submit',()=>clearInterval(timer));
+</script>
+{% endblock %}

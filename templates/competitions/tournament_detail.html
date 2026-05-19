@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% block title %}{{ tournament.title }} — Turnir — EduComp{% endblock %}
+{% block nav_tournament %}active{% endblock %}
+{% block content %}
+
+<!-- Turnir Header Banner -->
+<div class="turnir-header-banner" style="background: linear-gradient(135deg, #F4F7FB 0%, #EAEFF5 100%); border: 1px solid var(--gray-200); border-radius: 20px; padding: 32px 40px; color: var(--gray-800); margin-bottom: 32px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 24px; box-shadow: var(--shadow-sm); position: relative; overflow: hidden;">
+  <div style="position: absolute; right: -25px; top: -25px; width: 140px; height: 140px; border-radius: 50%; background: rgba(26, 134, 240, 0.03); pointer-events: none;"></div>
+  
+  <div style="position: relative; z-index: 2; display: flex; align-items: center; gap: 16px;">
+    <div style="font-size: 2.5rem;">🏆</div>
+    <div>
+      <h1 style="font-size: 2.25rem; font-weight: 800; margin: 0 0 6px 0; color: var(--gray-900); letter-spacing: -1.5px;">{{ tournament.title }}</h1>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span class="ec-badge" style="background: rgba(26, 134, 240, 0.1); color: var(--primary); font-weight: 700; border-radius: 6px;">
+          {{ tournament.category.name }}
+        </span>
+        <span style="font-size: 0.9rem; font-weight: 600; opacity: 0.85;">
+          {{ tournament.description|default:"Chiqib ketish tizimidagi yirik musobaqa" }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Status Badge on Right -->
+  <div style="position: relative; z-index: 2;">
+    {% if tournament.status == 'registration' %}
+    <span class="ec-badge ec-badge-success" style="font-size: 0.9rem; padding: 6px 14px; border-radius: 8px; font-weight: 800;">📝 Ro'yxatga olish ochiq</span>
+    {% elif tournament.status == 'active' %}
+    <span class="ec-badge ec-badge-danger" style="font-size: 0.9rem; padding: 6px 14px; border-radius: 8px; font-weight: 800; background: #FEE2E2; color: #EF4444; border: 1px solid #FCA5A5;">🔥 Musobaqa faol</span>
+    {% else %}
+    <span class="ec-badge ec-badge-gray" style="font-size: 0.9rem; padding: 6px 14px; border-radius: 8px; font-weight: 800;">✓ Yakunlangan</span>
+    {% endif %}
+  </div>
+</div>
+
+<div style="display:grid; grid-template-columns: 1fr 320px; gap: 28px; align-items: start;">
+  
+  <!-- LEFT COLUMN: Details & Actions -->
+  <div>
+    <div class="ec-card mb-4" style="border-radius: 16px; box-shadow: var(--shadow-sm); border-color: var(--gray-200); background: white;">
+      <div class="ec-card-header" style="background: var(--gray-50); border-bottom: 1px solid var(--gray-200); font-weight: 800; font-size: 0.95rem; color: var(--gray-800);">Turnir tafsilotlari</div>
+      <div class="ec-card-body" style="padding: 20px 24px;">
+        <div class="grid-2" style="gap: 16px;">
+          <div>
+            <div style="font-size: 0.75rem; font-weight: 700; color: var(--gray-400); text-transform: uppercase; margin-bottom: 2px;">Musobaqa formati</div>
+            <div style="font-weight: 700; color: var(--gray-800); display: flex; align-items: center; gap: 6px; font-size: 0.92rem;">
+              <span>🏅</span> Single Elimination (Chiqib ketish)
+            </div>
+          </div>
+          <div>
+            <div style="font-size: 0.75rem; font-weight: 700; color: var(--gray-400); text-transform: uppercase; margin-bottom: 2px;">Ishtirokchilar soni</div>
+            <div style="font-weight: 700; color: var(--gray-800); display: flex; align-items: center; gap: 6px; font-size: 0.92rem;">
+              <span>👥</span> {{ tournament.participant_count }} / {{ tournament.max_participants }} ta o'yinchi
+            </div>
+          </div>
+          <div>
+            <div style="font-size: 0.75rem; font-weight: 700; color: var(--gray-400); text-transform: uppercase; margin-bottom: 2px;">Kategoriya</div>
+            <div style="font-weight: 700; color: var(--gray-800); display: flex; align-items: center; gap: 6px; font-size: 0.92rem;">
+              <span>📚</span> {{ tournament.category.name }}
+            </div>
+          </div>
+          <div>
+            <div style="font-size: 0.75rem; font-weight: 700; color: var(--gray-400); text-transform: uppercase; margin-bottom: 2px;">Boshlanish vaqti</div>
+            <div style="font-weight: 700; color: var(--gray-800); display: flex; align-items: center; gap: 6px; font-size: 0.92rem;">
+              <span>📅</span> {{ tournament.start_time|date:"d M Y, H:i" }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions Block -->
+    <div style="margin-bottom: 24px;">
+      {% if tournament.status == 'registration' %}
+        {% if not is_registered %}
+        <form method="post">{% csrf_token %}
+          <button name="action" value="register" type="submit" class="ec-btn ec-btn-primary ec-btn-lg ec-btn-block" style="border-radius: 12px; font-weight: 800; padding: 12px; box-shadow: 0 4px 15px rgba(26,134,240,0.2);" {% if tournament.is_full %}disabled{% endif %}>
+            {% if tournament.is_full %}Turnir to'la{% else %}✅ Ro'yxatdan o'tish{% endif %}
+          </button>
+        </form>
+        {% else %}
+        <div class="ec-alert ec-alert-success" style="border-radius: 12px; font-weight: 600; padding: 14px; text-align: center;">
+          ✓ Siz ro'yxatdan o'tdingiz. Admin tomonidan turnir boshlanishini kuting!
+        </div>
+        {% endif %}
+      {% elif tournament.status == 'active' %}
+        {% if is_registered %}
+          {% if my_match %}
+            {% if my_match.status == 'bye' %}
+            <div class="ec-alert ec-alert-info" style="border-radius: 12px; font-weight: 600; padding: 14px; text-align: center;">
+              🎯 Bu turda sizda BYE (avtomatik o'tish) — keyingi turga o'tdingiz!
+            </div>
+            {% elif my_match.status == 'finished' %}
+              {% if my_match.winner == user %}
+              <div class="ec-alert ec-alert-success" style="border-radius: 12px; font-weight: 600; padding: 14px; text-align: center;">
+                ✓ Siz {{ current_round.round_number }}-turni g'alaba bilan yakunladingiz! Keyingi turni kuting.
+              </div>
+              {% else %}
+              <div class="ec-alert ec-alert-danger" style="border-radius: 12px; font-weight: 600; padding: 14px; text-align: center;">
+                Afsuski, siz {{ current_round.round_number }}-turda mag'lub bo'lib, turnirni tark etdingiz.
+              </div>
+              {% endif %}
+            {% else %}
+            <a href="{% url 'play_tournament_match' tournament.id my_match.id %}" class="ec-btn ec-btn-primary ec-btn-lg ec-btn-block" style="border-radius: 12px; font-weight: 800; padding: 14px 12px; text-align: center; box-shadow: 0 4px 15px rgba(26,134,240,0.2);">
+              ⚔️ {{ current_round.round_number }}-tur jangini boshlash!
+            </a>
+            {% endif %}
+          {% else %}
+          <div class="ec-alert ec-alert-warning" style="border-radius: 12px; font-weight: 600; padding: 14px; text-align: center;">
+            Ushbu turda siz uchun jang rejalashtirilmagan.
+          </div>
+          {% endif %}
+        {% else %}
+        <div class="ec-alert ec-alert-warning" style="border-radius: 12px; font-weight: 600; padding: 14px; text-align: center;">
+          Ro'yxatdan o'tish yopilgan. Turnir davom etmoqda.
+        </div>
+        {% endif %}
+      {% elif tournament.status == 'finished' %}
+      <div class="ec-alert ec-alert-info" style="border-radius: 12px; font-weight: 600; padding: 14px; text-align: center;">
+        🏁 Ushbu turnir yakunlandi.
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- View Bracket link -->
+    <div>
+      <a href="{% url 'tournament_bracket' tournament.id %}" class="ec-btn ec-btn-outline" style="border-radius: 10px; font-weight: 700; padding: 10px 20px; background: white;">
+        📊 Turnir to'rini ko'rish (Bracket)
+      </a>
+    </div>
+  </div>
+
+  <!-- RIGHT COLUMN: Participants List -->
+  <div>
+    <div class="ec-card" style="border-radius: 16px; box-shadow: var(--shadow-sm); border-color: var(--gray-200); background: white; overflow: hidden;">
+      <div class="ec-card-header" style="background: var(--gray-50); border-bottom: 1px solid var(--gray-200); font-weight: 800; font-size: 0.95rem; color: var(--gray-800);">
+        👥 Ishtirokchilar ({{ tournament.participant_count }}/{{ tournament.max_participants }})
+      </div>
+      <div style="max-height: 440px; overflow-y: auto;">
+        {% for p in participants %}
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--gray-100); background: {% if p.student == user %}#EFF6FF{% else %}transparent{% endif %};">
+          
+          <div style="display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1;">
+            <div class="ec-avatar" style="width: 32px; height: 32px; font-size: 0.8rem; background: var(--primary-light); color: var(--primary); font-weight: 800; border-radius: 50%;">
+              {{ p.student.username|first|upper }}
+            </div>
+            <div style="min-width: 0; flex: 1;">
+              <div style="font-weight: 700; font-size: 0.88rem; color: var(--gray-800); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: flex; align-items: center; gap: 4px;">
+                {{ p.student.username }}
+                {% if p.student == user %}
+                <span class="ec-badge ec-badge-primary" style="font-size: 0.6rem; padding: 1px 4px; font-weight: 800; border-radius: 3px;">Siz</span>
+                {% endif %}
+              </div>
+              <div style="margin-top: 2px;">
+                <span style="background: {{ p.student.rank_info.bg }}; color: {{ p.student.rank_info.color }}; border: 1px solid {{ p.student.rank_info.color }}20; font-size: 0.6rem; font-weight: 800; padding: 1px 4px; border-radius: 3px;">
+                  {{ p.student.rank_info.code }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            {% if p.is_eliminated %}
+            <span class="ec-badge" style="background: #F1F5F9; color: #94A3B8; border: 1px solid #E2E8F0; font-size: 0.68rem; font-weight: 700; border-radius: 4px;">Chiqdi</span>
+            {% else %}
+            <span class="ec-badge" style="background: #DCFCE7; color: #15803D; border: 1px solid #86EFAC; font-size: 0.68rem; font-weight: 700; border-radius: 4px;">Faol</span>
+            {% endif %}
+          </div>
+
+        </div>
+        {% empty %}
+        <div style="padding: 30px 20px; text-align: center; color: var(--gray-400); font-size: 0.88rem; font-weight: 500;">Hozircha ishtirokchilar yo'q</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard — EduComp{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <div style="display:flex;align-items:center;gap:20px">
+      <div class="avatar avatar-lg">{{ user.avatar_initial|default:"?" }}</div>
+      <div>
+        <h1>{{ user.full_name|default:user.username }}</h1>
+        <p>Rating: <strong class="text-primary">{{ user.rating }}</strong> &bull; @{{ user.username }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="container page-content">
+  <div class="grid grid-4" style="margin-bottom:32px">
+    <div class="stat-card"><div class="stat-value text-primary">{{ user.rating }}</div><div class="stat-label">Rating</div></div>
+    <div class="stat-card"><div class="stat-value text-success">{{ user.wins }}</div><div class="stat-label">Wins</div></div>
+    <div class="stat-card"><div class="stat-value text-danger">{{ user.losses }}</div><div class="stat-label">Losses</div></div>
+    <div class="stat-card"><div class="stat-value">{{ user.draws }}</div><div class="stat-label">Draws</div></div>
+  </div>
+  <div class="grid grid-2">
+    <div>
+      <div class="card">
+        <div class="card-header flex-between">
+          <h3 style="font-weight:700">Quick Actions</h3>
+        </div>
+        <div class="card-body">
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <a href="{% url 'duel_lobby' %}" class="btn btn-primary btn-lg">⚔️ Start a Duel</a>
+            <a href="{% url 'arena_list' %}" class="btn btn-danger btn-lg">🏟️ Join Arena</a>
+            <a href="{% url 'match_history' %}" class="btn btn-secondary btn-lg">📋 Match History</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><h3 style="font-weight:700">Recent Battles</h3></div>
+      <div class="card-body" style="padding:8px">
+        {% for match in recent_matches %}
+        <a href="{% url 'match_result' match.id %}" style="text-decoration:none">
+          <div class="leaderboard-row">
+            <div style="flex:1">
+              <div style="font-weight:600;font-size:.9rem;color:var(--text)">
+                vs {{ match.get_player2_display }}{% if match.player1 != user %} ({{ match.get_player1_display }}){% endif %}
+              </div>
+              <div style="font-size:.8rem;color:var(--text-secondary)">{{ match.category.name|default:"General" }}</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-weight:800">
+                {% if match.player1 == user %}{{ match.player1_score }} — {{ match.player2_score }}
+                {% else %}{{ match.player2_score }} — {{ match.player1_score }}{% endif %}
+              </div>
+              <div style="font-size:.75rem">
+                {% if match.winner == 'player1' and match.player1 == user %}<span class="text-success">Win</span>
+                {% elif match.winner == 'player2' and match.player2 == user %}<span class="text-success">Win</span>
+                {% elif match.winner == 'draw' %}<span class="text-muted">Draw</span>
+                {% else %}<span class="text-danger">Loss</span>{% endif %}
+              </div>
+            </div>
+          </div>
+        </a>
+        {% empty %}
+        <p class="text-muted text-center" style="padding:24px">No battles yet!</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% block title %}Arena Live — {{ arena.title }}{% endblock %}
+{% block content %}
+<div class="container" style="padding-top:24px">
+
+  <!-- Arena Live Banner -->
+  <div class="arena-live-banner">
+    <div>
+      <div style="font-size:.75rem;opacity:.8;text-transform:uppercase;letter-spacing:.05em">Live Arena</div>
+      <div style="font-size:1.2rem;font-weight:800">{{ arena.title }}</div>
+    </div>
+    <div style="text-align:center">
+      <div style="font-size:.7rem;opacity:.8;text-transform:uppercase;margin-bottom:4px">Time Remaining</div>
+      <div class="arena-timer-big" id="arena-timer">--:--</div>
+    </div>
+    <div style="text-align:right">
+      {% if my_score %}
+      <div style="font-size:.7rem;opacity:.8;text-transform:uppercase">Your Points</div>
+      <div style="font-size:1.5rem;font-weight:800">{{ my_score.points }}</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="grid grid-2" style="align-items:start">
+    <!-- Left: Battle area -->
+    <div>
+      {% if active_match %}
+      <div class="card" style="margin-bottom:24px">
+        <div class="card-body text-center" style="padding:32px">
+          <div style="font-size:2rem;margin-bottom:12px">⚔️</div>
+          <h3 style="font-weight:700;margin-bottom:8px">Battle in Progress!</h3>
+          <p class="text-muted" style="margin-bottom:20px">You have an active match</p>
+          <a href="{% url 'match_play' active_match.id %}" class="btn btn-primary btn-lg">Continue Battle →</a>
+        </div>
+      </div>
+      {% else %}
+      <div class="card" style="margin-bottom:24px">
+        <div class="card-body">
+          <div class="battle-area">
+            {% if arena.is_live %}
+            <form method="post" action="{% url 'arena_start_battle' arena.id %}">
+              {% csrf_token %}
+              <a class="battle-btn" href="#" onclick="this.closest('form').submit();return false">
+                <span class="icon">⚔️</span>
+                <span>BATTLE!</span>
+              </a>
+            </form>
+            <p class="text-muted mt-16" style="font-size:.875rem">Click to find an opponent</p>
+            {% else %}
+            <div style="font-size:2rem;margin-bottom:12px">⏰</div>
+            <p class="text-muted">Arena has ended</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      {% if my_score %}
+      <div class="card">
+        <div class="card-header"><h3 style="font-weight:700">Your Stats</h3></div>
+        <div class="card-body">
+          <div class="grid grid-4" style="gap:12px;text-align:center">
+            <div><div style="font-size:1.8rem;font-weight:800;color:var(--primary)">{{ my_score.points }}</div><div style="font-size:.7rem;color:var(--text-secondary);text-transform:uppercase">Points</div></div>
+            <div><div style="font-size:1.8rem;font-weight:800;color:var(--success)">{{ my_score.wins }}</div><div style="font-size:.7rem;color:var(--text-secondary);text-transform:uppercase">Wins</div></div>
+            <div><div style="font-size:1.8rem;font-weight:800;color:var(--danger)">{{ my_score.losses }}</div><div style="font-size:.7rem;color:var(--text-secondary);text-transform:uppercase">Losses</div></div>
+            <div><div style="font-size:1.8rem;font-weight:800">{{ my_score.total_matches }}</div><div style="font-size:.7rem;color:var(--text-secondary);text-transform:uppercase">Played</div></div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Right: Leaderboard -->
+    <div class="card">
+      <div class="card-header flex-between">
+        <h3 style="font-weight:700">🏆 Leaderboard</h3>
+        <span class="badge badge-primary">{{ arena.participant_count }} players</span>
+      </div>
+      <div class="card-body" style="padding:8px">
+        {% for score in scores %}
+        <div class="leaderboard-row {% if score.participant.id == participant.id %}selected{% endif %}" style="{% if score.participant.id == participant.id %}background:var(--primary-light);{% endif %}">
+          <div class="rank rank-{{ forloop.counter }}">{{ forloop.counter }}</div>
+          <div class="avatar avatar-sm">{{ score.participant.display_name|slice:":2"|upper }}</div>
+          <div class="leaderboard-name">
+            {{ score.participant.display_name }}
+            {% if score.participant.id == participant.id %}<span class="badge badge-primary" style="font-size:.65rem">You</span>{% endif %}
+          </div>
+          <div class="leaderboard-stats">
+            <div class="lb-stat"><div class="lb-stat-val">{{ score.wins }}</div><div class="lb-stat-label">W</div></div>
+            <div class="lb-stat"><div class="lb-stat-val">{{ score.losses }}</div><div class="lb-stat-label">L</div></div>
+          </div>
+          <div class="lb-points">{{ score.points }}</div>
+        </div>
+        {% empty %}
+        <p class="text-muted text-center" style="padding:24px">You are the first to join!</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+(function() {
+  const endTime = new Date({{ arena.end_time.timestamp|floatformat:0 }} * 1000);
+  const el = document.getElementById('arena-timer');
+
+  function update() {
+    const now = new Date();
+    const diff = Math.max(0, Math.floor((endTime - now) / 1000));
+    const h = Math.floor(diff / 3600);
+    const m = Math.floor((diff % 3600) / 60);
+    const s = diff % 60;
+    if (h > 0) {
+      el.textContent = h + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+    } else {
+      el.textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+    }
+    if (diff <= 0) {
+      el.textContent = 'ENDED';
+      clearInterval(timer);
+    }
+  }
+  update();
+  const timer = setInterval(update, 1000);
+
+  // Auto refresh leaderboard every 15s
+  setTimeout(() => location.reload(), 15000);
+})();
+</script>
+{% endblock %}

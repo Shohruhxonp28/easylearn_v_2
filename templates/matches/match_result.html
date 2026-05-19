@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+{% block title %}Bellashuv Natijasi — EduComp{% endblock %}
+{% block content %}
+<div style="max-width: 680px; margin: 0 auto;">
+
+  <!-- KEP.uz Style Bellashuv Yakunlandi Card -->
+  <div class="ec-card" style="border-radius: 20px; box-shadow: var(--shadow-lg); border-color: var(--gray-200); background: white; overflow: hidden; margin-bottom: 24px; padding: 32px;">
+    
+    <!-- Title Header -->
+    <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 28px; color: #15803D;">
+      <span style="font-size: 1.85rem;">⚡</span>
+      <h2 style="font-size: 1.65rem; font-weight: 800; margin: 0; letter-spacing: -1px; color: var(--gray-900);">Bellashuv yakunlandi</h2>
+    </div>
+
+    <!-- Players Header Banner -->
+    <div style="background: var(--gray-50); border: 1.5px solid var(--gray-200); border-radius: 16px; padding: 24px 20px; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 28px;">
+      
+      <!-- Player 1 (Left) -->
+      <div style="text-align: center; flex: 1; min-width: 0;">
+        <div style="position: relative; display: inline-block; margin-bottom: 6px;">
+          <div class="ec-avatar" style="width: 48px; height: 48px; margin: 0 auto; background: var(--primary-light); color: var(--primary); font-weight: 800; border-radius: 50%; border: 2.5px solid white; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
+            {{ match.player1.username|first|upper }}
+          </div>
+          <span style="position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%); background: {{ match.player1.rank_info.bg }}; color: {{ match.player1.rank_info.color }}; border: 1.5px solid {{ match.player1.rank_info.color }}40; font-size: 0.6rem; font-weight: 800; padding: 1px 5px; border-radius: 4px; line-height: 1; white-space: nowrap;">
+            {{ match.player1.rank_info.code }}
+          </span>
+        </div>
+        <div style="font-weight: 800; font-size: 0.9rem; color: var(--gray-800); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+          {{ match.player1.username }}
+        </div>
+        
+        <!-- Rating details -->
+        <div style="font-size: 0.72rem; color: var(--gray-400); font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 4px;">
+          <span>{{ match.player1.rating }}</span>
+          {% if match.winner == match.player1 %}
+            <span style="color: var(--success); font-weight: 800;">(+10)</span>
+          {% elif match.is_draw %}
+            <span style="color: var(--warning); font-weight: 800;">(+2)</span>
+          {% else %}
+            <span style="color: var(--danger); font-weight: 800;">(-5)</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Score Block -->
+      <div style="text-align: center; min-width: 80px;">
+        <div style="font-size: 2.25rem; font-weight: 900; color: var(--gray-900); letter-spacing: -1.5px; line-height: 1;">
+          {{ match.player1_score }} : {{ match.player2_score }}
+        </div>
+        <div style="font-size: 0.65rem; text-transform: uppercase; font-weight: 800; color: var(--gray-400); margin-top: 6px; letter-spacing: 0.8px;">HISOB</div>
+      </div>
+
+      <!-- Player 2 / Bot (Right) -->
+      <div style="text-align: center; flex: 1; min-width: 0;">
+        <div style="position: relative; display: inline-block; margin-bottom: 6px;">
+          <div class="ec-avatar" style="width: 48px; height: 48px; margin: 0 auto; background: {% if match.bot %}var(--gray-100){% else %}#FEE2E2{% endif %}; color: {% if match.bot %}var(--gray-600){% else %}#EF4444{% endif %}; font-weight: 800; border-radius: 50%; border: 2.5px solid white; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
+            {% if match.bot %}🤖{% else %}{{ match.player2.username|first|upper }}{% endif %}
+          </div>
+          {% if not match.bot %}
+          <span style="position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%); background: {{ match.player2.rank_info.bg }}; color: {{ match.player2.rank_info.color }}; border: 1.5px solid {{ match.player2.rank_info.color }}40; font-size: 0.6rem; font-weight: 800; padding: 1px 5px; border-radius: 4px; line-height: 1; white-space: nowrap;">
+            {{ match.player2.rank_info.code }}
+          </span>
+          {% else %}
+          <span style="position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%); background: #F1F5F9; color: #475569; border: 1px solid #CBD5E1; font-size: 0.6rem; font-weight: 800; padding: 1px 5px; border-radius: 4px; line-height: 1;">
+            BOT
+          </span>
+          {% endif %}
+        </div>
+        <div style="font-weight: 800; font-size: 0.9rem; color: var(--gray-800); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+          {% if match.bot %}{{ match.bot.name }}{% else %}{{ match.player2.username }}{% endif %}
+        </div>
+        
+        <!-- Rating details -->
+        <div style="font-size: 0.72rem; color: var(--gray-400); font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 4px;">
+          {% if not match.bot %}
+            <span>{{ match.player2.rating }}</span>
+            {% if match.winner == match.player2 %}
+              <span style="color: var(--success); font-weight: 800;">(+10)</span>
+            {% elif match.is_draw %}
+              <span style="color: var(--warning); font-weight: 800;">(+2)</span>
+            {% else %}
+              <span style="color: var(--danger); font-weight: 800;">(-5)</span>
+            {% endif %}
+          {% else %}
+            <span>Bot</span>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Side-by-side Questions Status Rows -->
+    <div style="border: 1px solid var(--gray-200); border-radius: 16px; overflow: hidden; margin-bottom: 32px;">
+      <div style="background: var(--gray-50); border-bottom: 1.5px solid var(--gray-200); padding: 12px; font-weight: 800; font-size: 0.82rem; color: var(--gray-500); display: flex; justify-content: space-between; text-align: center;">
+        <span style="width: 60px;">P1 Status</span>
+        <span>Savollar</span>
+        <span style="width: 60px;">P2 Status</span>
+      </div>
+      
+      <div style="display: flex; flex-direction: column;">
+        {% for r in review %}
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--gray-100);">
+          
+          <!-- P1 answer pill -->
+          <div style="width: 60px; display: flex; justify-content: center;">
+            {% if r.my_answer %}
+              {% if r.is_correct %}
+                <div style="background: #10B981; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 800;" title="Correct">W</div>
+              {% else %}
+                <div style="background: #EF4444; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 800;" title="Loss/Wrong">L</div>
+              {%   endif %}
+            {% else %}
+              <div style="background: #EAEFF5; color: #9CA8BA; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 800;">-</div>
+            {% endif %}
+          </div>
+
+          <!-- Question Label -->
+          <div style="font-weight: 700; font-size: 0.88rem; color: var(--gray-700);">
+            #{{ forloop.counter }}
+          </div>
+
+          <!-- P2 answer pill -->
+          <div style="width: 60px; display: flex; justify-content: center;">
+            {% if r.opp_answer %}
+              {% if r.opp_answer == r.question.correct_answer %}
+                <div style="background: #10B981; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 800;" title="Correct">W</div>
+              {% else %}
+                <div style="background: #EF4444; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 800;" title="Loss/Wrong">L</div>
+              {% endif %}
+            {% else %}
+              <div style="background: #EAEFF5; color: #9CA8BA; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 800;">-</div>
+            {% endif %}
+          </div>
+
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Actions block -->
+    <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+      <a href="{% url 'duel_lobby' %}" class="ec-btn ec-btn-primary" style="border-radius: 10px; font-weight: 700; padding: 12px 24px; box-shadow: 0 4px 12px rgba(26,134,240,0.2);">⚔️ Yangi Bellashuv</a>
+      <a href="{% url 'dashboard' %}" class="ec-btn ec-btn-outline" style="border-radius: 10px; font-weight: 700; padding: 12px 24px; background: white;">🏠 Bosh sahifa</a>
+    </div>
+
+  </div>
+
+  <!-- Answer Key Review accordion list -->
+  <div style="margin-bottom: 24px;">
+    <h3 style="font-size: 1rem; font-weight: 800; color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; padding-left: 4px;">📋 Savollar tahlili</h3>
+    
+    {% for r in review %}
+    <div class="review-card" style="background: white; border: 1.5px solid {% if r.is_correct %}#BBF7D0{% else %}#FCA5A5{% endif %}; border-radius: 16px; padding: 20px 24px; margin-bottom: 12px; box-shadow: var(--shadow-sm);">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 14px;">
+        <div>
+          <span style="background: {% if r.is_correct %}#DCFCE7; color: #15803D{% else %}#FEE2E2; color: #B91C1C{% endif %}; font-size: 0.72rem; font-weight: 800; padding: 2px 6px; border-radius: 4px;">
+            {% if r.is_correct %}To'g'ri{% else %}Noto'g'ri{% endif %}
+          </span>
+          <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--gray-800); margin: 6px 0 0 0; line-height: 1.4;">
+            {{ r.question.title }}
+          </h4>
+        </div>
+        <span style="font-weight: 800; font-size: 0.88rem; color: var(--gray-400);">Q{{ forloop.counter }}</span>
+      </div>
+
+      <!-- Question body text -->
+      {% if r.question.body %}
+      <div style="font-size: 0.92rem; color: var(--gray-600); line-height: 1.6; margin-bottom: 14px; background: var(--gray-50); padding: 12px; border-radius: 8px;">
+        {{ r.question.body }}
+      </div>
+      {% endif %}
+
+      <!-- Option list with correct/incorrect highlighting -->
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        {% for opt in r.options %}
+        <div style="padding: 10px 14px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 8px;
+             {% if opt.label == r.correct_answer %}
+               background: #DCFCE7; color: #15803D; border: 1px solid #86EFAC;
+             {% elif opt.label == r.my_answer and opt.label != r.correct_answer %}
+               background: #FEE2E2; color: #B91C1C; border: 1px solid #FCA5A5;
+             {% else %}
+               background: var(--gray-50); color: var(--gray-600); border: 1px solid var(--gray-200);
+             {% endif %}">
+          <strong style="font-weight: 800; font-size: 0.85rem;">{{ opt.label }}.</strong> 
+          <span>{{ opt.text }}</span>
+          
+          {% if opt.label == r.correct_answer %}
+            <span style="margin-left: auto; font-size: 0.75rem; font-weight: 800; background: #15803D; color: white; padding: 1px 6px; border-radius: 4px;">To'g'ri javob</span>
+          {% endif %}
+          {% if opt.label == r.my_answer and opt.label != r.correct_answer %}
+            <span style="margin-left: auto; font-size: 0.75rem; font-weight: 800; background: #B91C1C; color: white; padding: 1px 6px; border-radius: 4px;">Sizning javobingiz</span>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Explanation if present -->
+      {% if r.question.explanation %}
+      <div style="background: #EFF6FF; border-radius: 8px; padding: 12px; font-size: 0.85rem; color: #1D4ED8; margin-top: 12px; display: flex; gap: 6px; align-items: center;">
+        <span>💡</span>
+        <span><strong>Tushuntirish:</strong> {{ r.question.explanation }}</span>
+      </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,285 @@
+{% extends 'base.html' %}
+{% block title %}Match — Savol {{ current_idx|add:1 }}{% endblock %}
+{% block content %}
+
+<div class="match-layout" style="display:grid; grid-template-columns: 260px 1fr 240px; gap: 24px; align-items: start;">
+
+  <!-- LEFT COLUMN: Players & Score + Sidebar Progress -->
+  <div>
+    <!-- Scoreboard Card -->
+    <div class="ec-card" style="border-radius: 16px; padding: 18px 12px; margin-bottom: 20px; box-shadow: var(--shadow-sm); border-color: var(--gray-200); background: white;">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 4px;">
+        
+        <!-- Player 1 -->
+        <div style="text-align: center; flex: 1; min-width: 0;">
+          <div style="position: relative; display: inline-block; margin-bottom: 6px;">
+            <div class="ec-avatar" style="width: 46px; height: 46px; margin: 0 auto; background: var(--primary-light); color: var(--primary); font-weight: 800; border-radius: 50%; border: 2px solid white; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
+              {{ match.player1.username|first|upper }}
+            </div>
+            <span style="position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%); background: {{ match.player1.rank_info.bg }}; color: {{ match.player1.rank_info.color }}; border: 1px solid {{ match.player1.rank_info.color }}40; font-size: 0.6rem; font-weight: 800; padding: 1px 5px; border-radius: 4px; line-height: 1; white-space: nowrap;">
+              {{ match.player1.rank_info.code }}
+            </span>
+          </div>
+          <div style="font-weight: 800; font-size: 0.85rem; color: var(--gray-800); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 4px;">
+            {{ match.player1.username }}
+          </div>
+          <div style="font-size: 0.72rem; color: var(--gray-400); font-weight: 700; margin-top: 1px;">
+            {{ match.player1.rating }}
+          </div>
+        </div>
+
+        <!-- VS score block -->
+        <div style="text-align: center; min-width: 70px;">
+          <div style="font-size: 1.85rem; font-weight: 900; color: var(--gray-900); letter-spacing: -1px; line-height: 1;">
+            {{ match.player1_score }} : {{ match.player2_score }}
+          </div>
+          <div style="font-size: 0.62rem; text-transform: uppercase; font-weight: 800; color: var(--gray-400); margin-top: 4px; letter-spacing: 0.6px;">HISOB</div>
+        </div>
+
+        <!-- Player 2 / Bot -->
+        <div style="text-align: center; flex: 1; min-width: 0;">
+          <div style="position: relative; display: inline-block; margin-bottom: 6px;">
+            <div class="ec-avatar" style="width: 46px; height: 46px; margin: 0 auto; background: {% if match.bot %}var(--gray-100){% else %}#FEE2E2{% endif %}; color: {% if match.bot %}var(--gray-600){% else %}#EF4444{% endif %}; font-weight: 800; border-radius: 50%; border: 2px solid white; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
+              {% if match.bot %}🤖{% else %}{{ match.player2.username|first|upper }}{% endif %}
+            </div>
+            {% if not match.bot %}
+            <span style="position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%); background: {{ match.player2.rank_info.bg }}; color: {{ match.player2.rank_info.color }}; border: 1px solid {{ match.player2.rank_info.color }}40; font-size: 0.6rem; font-weight: 800; padding: 1px 5px; border-radius: 4px; line-height: 1; white-space: nowrap;">
+              {{ match.player2.rank_info.code }}
+            </span>
+            {% else %}
+            <span style="position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%); background: #F1F5F9; color: #475569; border: 1px solid #CBD5E1; font-size: 0.6rem; font-weight: 800; padding: 1px 5px; border-radius: 4px; line-height: 1;">
+              BOT
+            </span>
+            {% endif %}
+          </div>
+          <div style="font-weight: 800; font-size: 0.85rem; color: var(--gray-800); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 4px;">
+            {% if match.bot %}{{ match.bot.name }}{% else %}{{ match.player2.username }}{% endif %}
+          </div>
+          <div style="font-size: 0.72rem; color: var(--gray-400); font-weight: 700; margin-top: 1px;">
+            {% if match.bot %}Bot{% else %}{{ match.player2.rating }}{% endif %}
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Question Tracker Grid (Left P1 progress, Right P2 progress) -->
+    <div class="ec-card" style="border-radius: 16px; padding: 20px 16px; box-shadow: var(--shadow-sm); border-color: var(--gray-200); background: white;">
+      <div style="font-size: .75rem; font-weight: 800; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 16px; text-align: center;">O'yin statusi</div>
+      
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        {% for step in answered %}
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-radius: 10px; background: {% if step.is_current_user %}var(--primary-light){% else %}transparent{% endif %}; border: 1px solid {% if step.is_current_user %}var(--primary)15{% else %}transparent{% endif %};">
+          
+          <!-- Player 1 Answer status -->
+          <div style="display: flex; align-items: center; justify-content: center; width: 34px;">
+            {% if step.p1_answered %}
+              {% if step.p1_correct %}
+                <div style="background:#DCFCE7; color:#15803D; border: 1.5px solid #86EFAC; width:32px; height:24px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:900;" title="To'g'ri">✓</div>
+              {% else %}
+                <div style="background:#FEE2E2; color:#B91C1C; border: 1.5px solid #FCA5A5; width:32px; height:24px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:900;" title="Noto'g'ri">✗</div>
+              {% endif %}
+            {% else %}
+              <div style="background:#F1F5F9; color:#94A3B8; border: 1.5px solid #E2E8F0; width:32px; height:24px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:bold;">...</div>
+            {% endif %}
+          </div>
+
+          <!-- Question title label -->
+          <div style="font-weight: 700; font-size: 0.88rem; color: {% if step.is_current_user %}var(--primary){% else %}var(--gray-600){% endif %};">
+            #{{ step.n }}
+          </div>
+
+          <!-- Player 2 Answer status -->
+          <div style="display: flex; align-items: center; justify-content: center; width: 34px;">
+            {% if step.p2_answered %}
+              {% if step.p2_correct %}
+                <div style="background:#DCFCE7; color:#15803D; border: 1.5px solid #86EFAC; width:32px; height:24px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:900;" title="To'g'ri">✓</div>
+              {% else %}
+                <div style="background:#FEE2E2; color:#B91C1C; border: 1.5px solid #FCA5A5; width:32px; height:24px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:900;" title="Noto'g'ri">✗</div>
+              {% endif %}
+            {% else %}
+              <div style="background:#F1F5F9; color:#94A3B8; border: 1.5px solid #E2E8F0; width:32px; height:24px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:bold;">...</div>
+            {% endif %}
+          </div>
+
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- CENTER: Question details + Options -->
+  <div>
+    <form method="post" id="answerForm">
+      {% csrf_token %}
+
+      <div class="question-card" style="border-radius: 20px; box-shadow: var(--shadow-lg); border-color: var(--gray-200); overflow: hidden; background: white;">
+        <div style="padding: 20px 28px; border-bottom: 1px solid var(--gray-100); display: flex; justify-content: space-between; align-items: center; background: var(--gray-50);">
+          <span style="font-size: 1.35rem; font-weight: 900; color: var(--gray-900); letter-spacing: -0.5px;">#{{ current_idx|add:1 }}</span>
+          <div style="display:flex; gap:8px;">
+            <span class="ec-badge ec-badge-primary" style="font-weight: 700; border-radius: 6px; padding: 4px 10px;">{{ match.category.name }}</span>
+            <span class="ec-badge ec-badge-warning" style="font-weight: 700; border-radius: 6px; padding: 4px 10px;">+{{ question.points }} pts</span>
+          </div>
+        </div>
+
+        <div style="padding: 32px;">
+          <!-- Question Title/Topic if present, otherwise just body -->
+          <div style="font-size: 1.25rem; font-weight: 700; color: var(--gray-800); line-height: 1.6; margin-bottom: 28px;">
+            {{ question.title }}
+          </div>
+          {% if question.body %}
+          <div style="font-size: 1.05rem; color: var(--gray-600); line-height: 1.7; margin-bottom: 28px; background: var(--gray-50); padding: 20px; border-radius: 12px; border-left: 4px solid var(--primary);">
+            {{ question.body }}
+          </div>
+          {% endif %}
+
+          <!-- Options Grid (2x2) -->
+          <div class="duel-options-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            {% for option in options %}
+            <div style="position: relative;">
+              <input type="radio" class="answer-option" name="answer" id="opt_{{ option.label }}" value="{{ option.label }}" required style="display: none;">
+              <label class="answer-label" for="opt_{{ option.label }}" style="display: flex; align-items: center; gap: 14px; padding: 20px 24px; border-radius: 12px; border: 1.5px solid var(--gray-200); cursor: pointer; transition: all 0.2s; background: white; font-weight: 600; font-size: 1rem; color: var(--gray-700); min-height: 74px; box-shadow: var(--shadow-sm);">
+                <div class="answer-key" style="width: 30px; height: 30px; border-radius: 8px; border: 1.5px solid var(--gray-300); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; flex-shrink: 0; background: var(--gray-50);">
+                  {{ option.label }}
+                </div>
+                <span style="flex: 1;">{{ option.text }}</span>
+              </label>
+            </div>
+            {% empty %}
+            <div class="ec-alert ec-alert-danger" style="grid-column: span 2;">Ushbu savol uchun variantlar topilmadi.</div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div style="padding: 20px 28px; border-top: 1px solid var(--gray-100); display: flex; justify-content: space-between; align-items: center; background: var(--gray-50);">
+          <div style="font-size:.85rem; color:var(--gray-400); font-weight: 600;">
+            📊 {{ current_idx }} / {{ total }} ta javob berildi
+          </div>
+          <button type="submit" class="ec-btn ec-btn-primary ec-btn-lg" id="submitBtn" style="border-radius: 10px; font-weight: 700; padding: 12px 28px; box-shadow: 0 4px 12px rgba(26,134,240,0.25);" disabled>
+            {% if current_idx|add:1 == total %}🏁 Natijani ko'rish{% else %}Javobni yuborish{% endif %}
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- RIGHT COLUMN: Timer + Match Info -->
+  <div style="position:sticky; top:80px;">
+    <!-- KEP.uz Style Savol Taymeri -->
+    <div class="ec-card mb-4" style="border-radius: 16px; padding: 24px; box-shadow: var(--shadow-sm); background: white; border-color: var(--gray-200);">
+      <div style="font-size: 0.85rem; font-weight: 700; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px;">Savol taymeri</div>
+      <div style="font-size: 2.5rem; font-weight: 900; color: var(--gray-900); letter-spacing: -1px; line-height: 1; margin-bottom: 18px;" id="timerDisplay">
+        00:30
+      </div>
+      
+      <!-- Linear progress bar -->
+      <div style="width: 100%; height: 6px; background: var(--gray-100); border-radius: 3px; overflow: hidden; position: relative;">
+        <div id="progressBar" style="width: 100%; height: 100%; background: var(--primary); transition: width 1s linear; border-radius: 3px;"></div>
+      </div>
+    </div>
+
+    <!-- Match stats info -->
+    <div class="ec-card" style="border-radius: 16px; box-shadow: var(--shadow-sm); border-color: var(--gray-200); background: white;">
+      <div class="ec-card-header" style="background: var(--gray-50); border-bottom: 1px solid var(--gray-200); font-weight: 800; font-size: 0.9rem;">Jang tafsilotlari</div>
+      <div class="ec-card-body" style="padding: 20px; font-size: 0.88rem;">
+        <div style="margin-bottom: 14px; display: flex; justify-content: space-between;">
+          <span style="color:var(--gray-400); font-weight: 600;">Mavzu</span>
+          <strong style="color:var(--gray-700)">{{ match.category.name }}</strong>
+        </div>
+        <div style="margin-bottom: 14px; display: flex; justify-content: space-between;">
+          <span style="color:var(--gray-400); font-weight: 600;">Daraja</span>
+          <strong style="color:var(--gray-700)">{{ match.difficulty|capfirst }}</strong>
+        </div>
+        <div style="margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">
+          <span style="color:var(--gray-400); font-weight: 600;">Ochkolar</span>
+          <strong style="color:var(--primary); font-size: 1.15rem;">{{ my_score }}</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<style>
+.duel-options-grid label:hover {
+  border-color: var(--primary) !important;
+  background: var(--primary-light) !important;
+  color: var(--primary) !important;
+}
+.duel-options-grid label:hover .answer-key {
+  border-color: var(--primary) !important;
+  color: var(--primary) !important;
+  background: white !important;
+}
+.answer-option:checked + label {
+  border-color: var(--primary) !important;
+  background: var(--primary) !important;
+  color: white !important;
+  box-shadow: 0 4px 15px rgba(26,134,240,0.2) !important;
+}
+.answer-option:checked + label .answer-key {
+  background: rgba(255, 255, 255, 0.25) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  color: white !important;
+}
+@media (max-width: 992px) {
+  .match-layout { grid-template-columns: 1fr !important; }
+}
+</style>
+
+{% endblock %}
+{% block extra_js %}
+<script>
+// Enable submit button when answer option is selected
+document.querySelectorAll('input[name="answer"]').forEach(function(radio){
+  radio.addEventListener('change', function(){
+    document.getElementById('submitBtn').disabled = false;
+  });
+});
+
+// Linear Timer logic
+var TOTAL_TIME = 30;
+var timeLeft = TOTAL_TIME;
+var timerDisplay = document.getElementById('timerDisplay');
+var progressBar = document.getElementById('progressBar');
+
+var timer = setInterval(function(){
+  timeLeft--;
+  
+  // Format as 00:SS
+  var secStr = timeLeft < 10 ? '0' + timeLeft : timeLeft;
+  timerDisplay.textContent = '00:' + secStr;
+  
+  // Update progress bar width
+  var pct = (timeLeft / TOTAL_TIME) * 100;
+  progressBar.style.width = pct + '%';
+  
+  // Change color to danger red when critical time remains
+  if(timeLeft <= 10){
+    progressBar.style.background = '#EF4444';
+    timerDisplay.style.color = '#EF4444';
+  }
+  
+  if(timeLeft <= 0){
+    clearInterval(timer);
+    // Auto-select a random option and submit on timeout
+    var radios = document.querySelectorAll('input[name="answer"]');
+    if(!document.querySelector('input[name="answer"]:checked')){
+      var opts = ['A','B','C','D'];
+      var pick = opts[Math.floor(Math.random() * opts.length)];
+      var targetOpt = document.querySelector('input[value="' + pick + '"]');
+      if (targetOpt) {
+        targetOpt.checked = true;
+      }
+    }
+    document.getElementById('submitBtn').disabled = false;
+    document.getElementById('answerForm').submit();
+  }
+}, 1000);
+
+// Stop timer when submitting manually
+document.getElementById('answerForm').addEventListener('submit', function(){
+  clearInterval(timer);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,327 @@
+{% extends 'base.html' %}
+{% block title %}{{ arena.title }} — Arena — EduComp{% endblock %}
+{% block nav_arena %}active{% endblock %}
+{% block content %}
+
+<!-- KEP.uz Style Golden Arena Banner -->
+<div class="arena-header-banner" style="background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%); border: 1px solid #FCD34D; border-radius: 20px; padding: 32px 40px; color: #78350F; margin-bottom: 32px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 24px; box-shadow: var(--shadow-sm); position: relative; overflow: hidden;">
+  <div style="position: absolute; left: -20px; top: -20px; width: 140px; height: 140px; border-radius: 50%; background: rgba(251, 191, 36, 0.2); pointer-events: none;"></div>
+  
+  <div style="position: relative; z-index: 2; display: flex; align-items: center; gap: 16px;">
+    <div style="font-size: 2.5rem;">⭐️</div>
+    <div>
+      <h1 style="font-size: 2.25rem; font-weight: 900; margin: 0 0 6px 0; color: #78350F; letter-spacing: -1.5px;">{{ arena.title }}</h1>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span class="ec-badge" style="background: rgba(120, 53, 15, 0.1); color: #78350F; font-weight: 700; border-radius: 6px;">
+          {{ arena.category.name }}
+        </span>
+        <span style="font-size: 0.9rem; font-weight: 600; opacity: 0.85;">
+          {{ arena.description|default:"Vaqt bilan cheklangan shiddatli jang" }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- KEP.uz Style Active Countdown Timer -->
+  <div style="text-align: right; position: relative; z-index: 2; min-width: 260px;">
+    <div id="timerLabel" style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: #78350F; margin-bottom: 8px; letter-spacing: 0.8px; opacity: 0.9;">
+      {% if arena.get_status == 'live' %}Arena tugashiga{% elif arena.get_status == 'upcoming' %}Arena boshlanishiga{% else %}Arena yakunlandi{% endif %}
+    </div>
+    
+    <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px;">
+      <!-- Hours -->
+      <div style="background: #1E293B; color: white; font-size: 1.5rem; font-weight: 900; padding: 8px 12px; border-radius: 8px; font-family: monospace; min-width: 48px; text-align: center;" id="hourBox">00</div>
+      <div style="font-size: 1.25rem; font-weight: 900; color: #78350F;">:</div>
+      <!-- Minutes -->
+      <div style="background: #1E293B; color: white; font-size: 1.5rem; font-weight: 900; padding: 8px 12px; border-radius: 8px; font-family: monospace; min-width: 48px; text-align: center;" id="minBox">00</div>
+      <div style="font-size: 1.25rem; font-weight: 900; color: #78350F;">:</div>
+      <!-- Seconds -->
+      <div style="background: #1E293B; color: white; font-size: 1.5rem; font-weight: 900; padding: 8px 12px; border-radius: 8px; font-family: monospace; min-width: 48px; text-align: center;" id="secBox">00</div>
+    </div>
+    <div style="width: 100%; height: 3px; background: #E2E8F0; margin-top: 10px; border-radius: 2px; overflow: hidden; display: {% if arena.get_status == 'live' %}block{% else %}none{% endif %};">
+      <div id="bannerProgress" style="width: 100%; height: 100%; background: #1A86F0; transition: width 1s linear;"></div>
+    </div>
+  </div>
+</div>
+
+<div style="display:grid; grid-template-columns: 320px 1fr; gap: 28px; align-items: start;">
+  
+  <!-- LEFT COLUMN: Arena Details -->
+  <div>
+    <div class="ec-card" style="border-radius: 16px; box-shadow: var(--shadow-sm); border-color: var(--gray-200); background: white;">
+      <div class="ec-card-header" style="background: var(--gray-50); border-bottom: 1px solid var(--gray-200); font-weight: 800; font-size: 0.95rem; color: var(--gray-800);">Arena haqida</div>
+      <div class="ec-card-body" style="padding: 20px 24px; font-size: 0.88rem; color: var(--gray-600); line-height: 1.7;">
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+          <div>
+            <div style="font-size: 0.75rem; font-weight: 700; color: var(--gray-400); text-transform: uppercase; margin-bottom: 2px;">Arena boshlanishi</div>
+            <div style="font-weight: 700; color: var(--gray-800); display: flex; align-items: center; gap: 6px;">
+              <span>📅</span> {{ arena.start_time|date:"d M Y, H:i" }}
+            </div>
+          </div>
+          <div>
+            <div style="font-size: 0.75rem; font-weight: 700; color: var(--gray-400); text-transform: uppercase; margin-bottom: 2px;">Arena yakunlanishi</div>
+            <div style="font-weight: 700; color: var(--gray-800); display: flex; align-items: center; gap: 6px;">
+              <span>📅</span> {{ arena.end_time|date:"d M Y, H:i" }}
+            </div>
+          </div>
+          <div>
+            <div style="font-size: 0.75rem; font-weight: 700; color: var(--gray-400); text-transform: uppercase; margin-bottom: 2px;">Har bellashuv vaqti</div>
+            <div style="font-weight: 700; color: var(--gray-800); display: flex; align-items: center; gap: 6px;">
+              <span>⏱️</span> 60 soniya (Time limit)
+            </div>
+          </div>
+          <div>
+            <div style="font-size: 0.75rem; font-weight: 700; color: var(--gray-400); text-transform: uppercase; margin-bottom: 2px;">Savollar</div>
+            <div style="font-weight: 700; color: var(--gray-800); display: flex; align-items: center; gap: 6px;">
+              <span>❓</span> {{ arena.questions_per_match }} ta savol (Har jangda)
+            </div>
+          </div>
+          <div>
+            <div style="font-size: 0.75rem; font-weight: 700; color: var(--gray-400); text-transform: uppercase; margin-bottom: 2px;">Savol vaqti turi</div>
+            <div style="font-weight: 700; color: var(--gray-800); display: flex; align-items: center; gap: 6px;">
+              <span>⏳</span> Har savol uchun 30s
+            </div>
+          </div>
+        </div>
+
+        <hr class="ec-divider" style="margin: 20px 0;">
+
+        <div style="background: var(--gray-50); border-radius: 10px; padding: 12px; font-size: 0.8rem; line-height: 1.5; color: var(--gray-500);">
+          🏆 <strong>Ballarni hisoblash qoidasi:</strong><br>
+          G'alaba: +2 ball · Durang: +1 ball · Mag'lubiyat: 0 ball.
+        </div>
+        
+        <div style="margin-top: 24px;">
+          <form method="post">
+            {% csrf_token %}
+            {% if not is_registered %}
+              {% if arena.get_status != 'finished' %}
+              <button name="action" value="register" type="submit" class="ec-btn ec-btn-primary ec-btn-lg ec-btn-block" style="border-radius: 12px; font-weight: 800; padding: 12px; box-shadow: 0 4px 15px rgba(26,134,240,0.2);">
+                ✅ Arenada ro'yxatdan o'tish
+              </button>
+              {% endif %}
+            {% else %}
+              {% if arena.is_live %}
+                {% if active_match %}
+                <a href="{% url 'arena_match_play' arena.id active_match.id %}" class="ec-btn ec-btn-warning ec-btn-lg ec-btn-block" style="border-radius: 12px; font-weight: 800; padding: 12px; text-align: center; box-shadow: 0 4px 15px rgba(245,158,11,0.2);">⚡ Faol jangni davom ettirish</a>
+                {% else %}
+                <button name="action" value="start_battle" type="submit" class="ec-btn ec-btn-primary ec-btn-lg ec-btn-block" style="border-radius: 12px; font-weight: 800; padding: 12px; box-shadow: 0 4px 15px rgba(26,134,240,0.2);">⚔️ Jangni boshlash!</button>
+                {% endif %}
+              {% elif arena.get_status == 'upcoming' %}
+              <div class="ec-alert ec-alert-info" style="border-radius: 10px; font-weight: 600; text-align: center;">Jangga ro'yxatdan o'tdingiz. Arena boshlanishini kuting!</div>
+              {% else %}
+              <div class="ec-alert ec-alert-warning" style="border-radius: 10px; font-weight: 600; text-align: center;">Ushbu arena yakunlandi.</div>
+              {% endif %}
+            {% endif %}
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT COLUMN: Podium Winners + Leaderboard Table -->
+  <div>
+    <!-- Podium Winners Card -->
+    {% if scores|length >= 1 %}
+    <div class="ec-card mb-4" style="border-radius: 20px; box-shadow: var(--shadow-sm); border-color: var(--gray-200); background: white; overflow: hidden;">
+      <div class="ec-card-header" style="background: var(--gray-50); border-bottom: 1px solid var(--gray-200); font-weight: 800; font-size: 0.95rem; color: var(--gray-800);">Arena g'oliblari</div>
+      <div class="ec-card-body" style="padding: 24px 32px 12px 32px; display: flex; align-items: flex-end; justify-content: center; gap: 24px; min-height: 240px; background: linear-gradient(to top, var(--gray-50) 0%, white 100%);">
+        
+        <!-- 2nd Place (Silver Medal Column) -->
+        {% if scores|length >= 2 %}
+        {% with second=scores.1 %}
+        <div style="display: flex; flex-direction: column; align-items: center; width: 140px; text-align: center;">
+          <div style="position: relative; display: inline-block;">
+            <div style="width: 48px; height: 48px; border-radius: 50%; background: #E2E8F0; border: 2.5px solid #94A3B8; color: #475569; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: 900; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">🥈</div>
+          </div>
+          <div style="margin-top: 10px; font-weight: 800; font-size: 0.92rem; color: var(--gray-800); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 120px;">
+            {{ second.student.username }}
+          </div>
+          <!-- Rank badge -->
+          <div style="margin-top: 4px;">
+            <span style="background: {{ second.student.rank_info.bg }}; color: {{ second.student.rank_info.color }}; border: 1px solid {{ second.student.rank_info.color }}40; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 4px;">
+              {{ second.student.rank_info.code }}
+            </span>
+          </div>
+          <div style="font-weight: 800; color: var(--gray-700); font-size: 0.9rem; margin-top: 4px;">{{ second.points }} ball</div>
+          <div style="height: 90px; width: 100%; background: linear-gradient(180deg, #CBD5E1 0%, #94A3B8 100%); margin-top: 12px; border-top-left-radius: 8px; border-top-right-radius: 8px; box-shadow: var(--shadow-sm); display: flex; align-items: center; justify-content: center; font-weight: 900; color: white; font-size: 1.5rem;">2</div>
+        </div>
+        {% endwith %}
+        {% else %}
+        <div style="width: 140px;"></div>
+        {% endif %}
+
+        <!-- 1st Place (Gold Trophy Column) -->
+        {% with first=scores.0 %}
+        <div style="display: flex; flex-direction: column; align-items: center; width: 160px; text-align: center; transform: translateY(-10px);">
+          <div style="position: relative; display: inline-block;">
+            <div style="width: 60px; height: 60px; border-radius: 50%; background: #FEF3C7; border: 3px solid #F59E0B; color: #D97706; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 900; box-shadow: 0 6px 15px rgba(245,158,11,0.2);">🏆</div>
+          </div>
+          <div style="margin-top: 10px; font-weight: 900; font-size: 1rem; color: var(--gray-900); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px;">
+            {{ first.student.username }}
+          </div>
+          <!-- Rank badge -->
+          <div style="margin-top: 4px;">
+            <span style="background: {{ first.student.rank_info.bg }}; color: {{ first.student.rank_info.color }}; border: 1px solid {{ first.student.rank_info.color }}40; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 4px;">
+              {{ first.student.rank_info.code }}
+            </span>
+          </div>
+          <div style="font-weight: 900; color: #D97706; font-size: 1.05rem; margin-top: 4px;">{{ first.points }} ball</div>
+          <div style="height: 120px; width: 100%; background: linear-gradient(180deg, #FCD34D 0%, #D97706 100%); margin-top: 12px; border-top-left-radius: 10px; border-top-right-radius: 10px; box-shadow: var(--shadow-sm); display: flex; align-items: center; justify-content: center; font-weight: 900; color: white; font-size: 2rem;">1</div>
+        </div>
+        {% endwith %}
+
+        <!-- 3rd Place (Bronze Medal Column) -->
+        {% if scores|length >= 3 %}
+        {% with third=scores.2 %}
+        <div style="display: flex; flex-direction: column; align-items: center; width: 140px; text-align: center;">
+          <div style="position: relative; display: inline-block;">
+            <div style="width: 48px; height: 48px; border-radius: 50%; background: #FFEDD5; border: 2px solid #D97706; color: #C2410C; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: 900; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">🥉</div>
+          </div>
+          <div style="margin-top: 10px; font-weight: 800; font-size: 0.92rem; color: var(--gray-800); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 120px;">
+            {{ third.student.username }}
+          </div>
+          <!-- Rank badge -->
+          <div style="margin-top: 4px;">
+            <span style="background: {{ third.student.rank_info.bg }}; color: {{ third.student.rank_info.color }}; border: 1px solid {{ third.student.rank_info.color }}40; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 4px;">
+              {{ third.student.rank_info.code }}
+            </span>
+          </div>
+          <div style="font-weight: 800; color: var(--gray-700); font-size: 0.9rem; margin-top: 4px;">{{ third.points }} ball</div>
+          <div style="height: 70px; width: 100%; background: linear-gradient(180deg, #FDBA74 0%, #C2410C 100%); margin-top: 12px; border-top-left-radius: 8px; border-top-right-radius: 8px; box-shadow: var(--shadow-sm); display: flex; align-items: center; justify-content: center; font-weight: 900; color: white; font-size: 1.4rem;">3</div>
+        </div>
+        {% endwith %}
+        {% else %}
+        <div style="width: 140px;"></div>
+        {% endif %}
+
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Leaderboard Standings Table (KEP.uz style list) -->
+    <div class="ec-card" style="border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-sm); border-color: var(--gray-200); background: white;">
+      <div class="ec-card-header" style="background: var(--gray-50); border-bottom: 1px solid var(--gray-200); font-weight: 800; font-size: 0.95rem; color: var(--gray-800);">Yakuniy arena natijalari</div>
+      
+      <table class="ec-table">
+        <thead>
+          <tr>
+            <th style="width: 80px; text-align: center;">O'rin</th>
+            <th>O'yinchi</th>
+            <th style="text-align: center;">G'alaba/Durang/Mag'lubiyat</th>
+            <th style="width: 120px; text-align: center;">Ochko</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for score in scores %}
+          <tr style="background: {% if score.student == user %}#EFF6FF{% else %}transparent{% endif %}; transition: all 0.2s;">
+            <td style="text-align: center; font-weight: 800;">
+              {% if forloop.counter == 1 %}🥇
+              {% elif forloop.counter == 2 %}🥈
+              {% elif forloop.counter == 3 %}🥉
+              {% else %}{{ forloop.counter }}{% endif %}
+            </td>
+            <td>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div class="ec-avatar" style="width: 32px; height: 32px; font-size: 0.8rem; background: var(--primary-light); color: var(--primary); font-weight: 800; border-radius: 50%;">
+                  {{ score.student.username|first|upper }}
+                </div>
+                <div>
+                  <div style="font-weight: 700; color: var(--gray-800); display: flex; align-items: center; gap: 6px;">
+                    {{ score.student.username }}
+                    {% if score.student == user %}
+                    <span class="ec-badge ec-badge-primary" style="font-size: 0.6rem; padding: 1px 4px; font-weight: 800;">Siz</span>
+                    {% endif %}
+                  </div>
+                  <!-- Rank Code -->
+                  <div style="margin-top: 2px;">
+                    <span style="background: {{ score.student.rank_info.bg }}; color: {{ score.student.rank_info.color }}; border: 1px solid {{ score.student.rank_info.color }}20; font-size: 0.62rem; font-weight: 800; padding: 1px 4px; border-radius: 3px;">
+                      {{ score.student.rank_info.code }} {{ score.student.rank_info.name }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td style="text-align: center; font-weight: 600; color: var(--gray-500); font-size: 0.85rem;">
+              <span style="color: var(--success);">{{ score.wins }}W</span> / <span style="color: var(--warning);">{{ score.draws }}D</span> / <span style="color: var(--danger);">{{ score.losses }}L</span>
+            </td>
+            <td style="text-align: center; font-weight: 800; font-size: 1.1rem; color: var(--gray-900);">
+              {{ score.points }}
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="4" style="text-align: center; padding: 40px; color: var(--gray-400);">Hozircha natijalar mavjud emas. Birinchi bo'ling!</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      
+      <div class="ec-card-footer" style="background: var(--gray-50); border-top: 1px solid var(--gray-200); padding: 16px;">
+        <a href="{% url 'arena_leaderboard' arena.id %}" class="ec-btn ec-btn-outline ec-btn-sm ec-btn-block" style="border-radius: 8px; font-weight: 700; text-align: center; background: white;">To'liq jadvalni ko'rish</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}
+{% block extra_js %}
+<script>
+// Countdown Timer logic based on Arena end_time/start_time
+var startTime = new Date("{{ arena.start_time|date:'c' }}").getTime();
+var endTime = new Date("{{ arena.end_time|date:'c' }}").getTime();
+
+var timerInterval = setInterval(function() {
+  var now = new Date().getTime();
+  var targetTime = 0;
+  var isLive = false;
+  var isUpcoming = false;
+  
+  if (now < startTime) {
+    targetTime = startTime;
+    isUpcoming = true;
+    document.getElementById('timerLabel').textContent = "Arena boshlanishiga";
+  } else if (now < endTime) {
+    targetTime = endTime;
+    isLive = true;
+    document.getElementById('timerLabel').textContent = "Arena tugashiga";
+  } else {
+    // Arena is finished
+    clearInterval(timerInterval);
+    document.getElementById('timerLabel').textContent = "Arena yakunlandi";
+    document.getElementById('hourBox').textContent = "00";
+    document.getElementById('minBox').textContent = "00";
+    document.getElementById('secBox').textContent = "00";
+    if (document.getElementById('bannerProgress')) {
+      document.getElementById('bannerProgress').parentElement.style.display = "none";
+    }
+    return;
+  }
+  
+  var diff = targetTime - now;
+  
+  // Time calculations for hours, minutes and seconds
+  var hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  var seconds = Math.floor((diff % (1000 * 60)) / 1000);
+  
+  // Format leading zeros
+  var hrsStr = hours < 10 ? '0' + hours : hours;
+  var minsStr = minutes < 10 ? '0' + minutes : minutes;
+  var secsStr = seconds < 10 ? '0' + seconds : seconds;
+  
+  document.getElementById('hourBox').textContent = hrsStr;
+  document.getElementById('minBox').textContent = minsStr;
+  document.getElementById('secBox').textContent = secsStr;
+  
+  // Update progress bar
+  if (isLive && document.getElementById('bannerProgress')) {
+    var totalDuration = endTime - startTime;
+    var currentElapsed = now - startTime;
+    var pct = 100 - ((currentElapsed / totalDuration) * 100);
+    document.getElementById('bannerProgress').style.width = pct + '%';
+  }
+}, 1000);
+</script>
+{% endblock %}

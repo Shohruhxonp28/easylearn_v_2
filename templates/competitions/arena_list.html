@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% block title %}Arenalar — EduComp{% endblock %}
+{% block nav_arena %}active{% endblock %}
+{% block content %}
+
+<!-- Arenalar Banner -->
+<div class="arenalar-banner" style="background: linear-gradient(135deg, #F4F7FB 0%, #EAEFF5 100%); border: 1px solid var(--gray-200); border-radius: 20px; padding: 40px 32px; color: var(--gray-800); margin-bottom: 32px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 24px; box-shadow: var(--shadow-sm); position: relative; overflow: hidden;">
+  <div style="position: absolute; right: -30px; top: -30px; width: 200px; height: 200px; border-radius: 50%; background: rgba(26, 134, 240, 0.03); pointer-events: none;"></div>
+  
+  <div style="position: relative; z-index: 2;">
+    <h1 style="font-size: 2.25rem; font-weight: 800; margin: 0 0 10px 0; display: flex; align-items: center; gap: 12px; letter-spacing: -1.5px; color: var(--gray-900);">
+      🛡️ Arenalar
+    </h1>
+    <p style="margin: 0; opacity: 0.85; font-size: 1.05rem; font-weight: 500;">Vaqt bilan cheklangan musobaqalar — ko'plab raqiblar bilan bellashing va yetakchiga aylaning.</p>
+  </div>
+</div>
+
+<!-- Arenas Cards Grid -->
+<div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 24px;">
+  {% for arena in arenas %}
+  {% with status=arena.get_status %}
+  <div class="arena-card" style="background: white; border: 1px solid var(--gray-200); border-radius: 20px; padding: 24px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: var(--shadow-sm); transition: all 0.25s; position: relative;">
+    
+    <!-- Top icon block -->
+    <div style="display:flex; justify-content:center; padding: 24px 0 24px 0;">
+      <div style="width: 76px; height: 76px; border-radius: 50%; background: #0D6EFD; color: white; display: flex; align-items: center; justify-content: center; font-size: 2.25rem; box-shadow: 0 10px 25px rgba(13,110,253,0.22);">
+        🛡️
+      </div>
+    </div>
+
+    <!-- Info Block -->
+    <div>
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap: 10px; margin-bottom: 8px;">
+        <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--gray-900); margin: 0; line-height: 1.3;">{{ arena.title }}</h3>
+        
+        <!-- Category tag -->
+        <span style="background: var(--primary-light); color: var(--primary); border: 1px solid var(--primary-dark)15; font-size: 0.72rem; font-weight: 700; padding: 3px 8px; border-radius: 6px; white-space: nowrap;">
+          {{ arena.category.name }}
+        </span>
+      </div>
+
+      <div style="font-size: 0.85rem; color: var(--gray-500); margin-bottom: 20px; display: flex; flex-direction: column; gap: 6px; font-weight: 500;">
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span>📅</span> Vaqti: {{ arena.start_time|date:"d M, H:i" }} → {{ arena.end_time|date:"H:i" }}
+        </div>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span>📝</span> Har bir jangda: {{ arena.questions_per_match }} ta savol
+        </div>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span>🤖</span> Botlar ishtiroki: {{ arena.bot_enabled|yesno:"Ruxsat etilgan,Taqiqlangan" }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Action block -->
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; border-top: 1px solid var(--gray-100); padding-top: 18px;">
+      <div>
+        {% if status == 'live' %}
+        <span class="ec-badge ec-badge-live" style="font-weight:700; padding:4px 10px; border-radius:6px;">🔴 JONLI (LIVE)</span>
+        {% elif status == 'upcoming' %}
+        <span class="ec-badge ec-badge-warning" style="font-weight:700; padding:4px 10px; border-radius:6px; background: #FFFBEB; color: #D97706; border: 1px solid #FDE68A;">📅 Tez kunda</span>
+        {% else %}
+        <span class="ec-badge ec-badge-gray" style="font-weight:700; padding:4px 10px; border-radius:6px;">✓ Yakunlangan</span>
+        {% endif %}
+      </div>
+      
+      <a href="{% url 'arena_detail' arena.id %}" class="ec-btn ec-btn-primary" style="border-radius: 10px; font-weight: 700; padding: 8px 16px; box-shadow: 0 4px 10px rgba(13,110,253,0.15);">Kirish →</a>
+    </div>
+
+  </div>
+  {% endwith %}
+  {% empty %}
+  <div style="grid-column: span 3;">
+    <div class="ec-card" style="border-radius: 20px;">
+      <div class="ec-empty" style="padding: 60px 20px;">
+        <div class="ec-empty-icon" style="font-size: 4rem;">🛡️</div>
+        <div class="ec-empty-title" style="font-size: 1.25rem;">Hozircha arenalar yo'q</div>
+        <div class="ec-empty-sub" style="font-size: 0.95rem;">Tez orada qiziqarli arena bellashuvlari boshlanadi!</div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<style>
+.arena-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--primary) !important;
+  box-shadow: 0 12px 30px rgba(13, 110, 253, 0.08) !important;
+}
+</style>
+
+{% endblock %}

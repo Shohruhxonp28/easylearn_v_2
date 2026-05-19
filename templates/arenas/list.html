@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}Arenas — EduComp{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <h1>🏟️ Arena Events</h1>
+    <p>Join live competitive arenas and battle multiple opponents in real-time</p>
+  </div>
+</div>
+<div class="container page-content">
+  {% if arenas %}
+  <div class="grid grid-3">
+    {% for arena in arenas %}
+    <div class="arena-card">
+      <div class="arena-card-header">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+          <span class="badge {% if arena.status == 'live' %}badge-live{% elif arena.status == 'upcoming' %}badge-warning{% else %}badge-secondary{% endif %}">
+            {% if arena.status == 'live' %}🔴 LIVE{% elif arena.status == 'upcoming' %}⏳ Upcoming{% else %}✅ Finished{% endif %}
+          </span>
+          {% if arena.category %}<span class="badge badge-primary">{{ arena.category.icon }} {{ arena.category.name }}</span>{% endif %}
+        </div>
+        <h3 style="font-weight:800;font-size:1.1rem">{{ arena.title }}</h3>
+      </div>
+      <div class="arena-card-body">
+        {% if arena.description %}<p class="text-muted" style="font-size:.875rem;margin-bottom:16px">{{ arena.description }}</p>{% endif %}
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:.85rem">
+          <div><span class="text-muted">Start:</span><br><strong>{{ arena.start_time|date:"M d, H:i" }}</strong></div>
+          <div><span class="text-muted">End:</span><br><strong>{{ arena.end_time|date:"M d, H:i" }}</strong></div>
+          <div><span class="text-muted">Questions/match:</span><br><strong>{{ arena.questions_per_match }}</strong></div>
+          <div><span class="text-muted">Participants:</span><br><strong>{{ arena.participant_count }}</strong></div>
+        </div>
+      </div>
+      <div class="arena-card-footer" style="display:flex;gap:8px">
+        <a href="{% url 'arena_detail' arena.id %}" class="btn btn-secondary btn-sm">Details</a>
+        {% if arena.status == 'live' %}
+        <a href="{% url 'arena_join' arena.id %}" class="btn btn-danger btn-sm">Join Now!</a>
+        {% endif %}
+        <a href="{% url 'arena_leaderboard' arena.id %}" class="btn btn-outline btn-sm">Leaderboard</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="card text-center" style="padding:80px 32px">
+    <div style="font-size:4rem;margin-bottom:16px">🏟️</div>
+    <h2 style="font-weight:700;margin-bottom:8px">No Active Arenas</h2>
+    <p class="text-muted">Check back later or try a quick Duel!</p>
+    <div style="margin-top:24px">
+      <a href="{% url 'duel_lobby' %}" class="btn btn-primary btn-lg">⚔️ Start a Duel</a>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
