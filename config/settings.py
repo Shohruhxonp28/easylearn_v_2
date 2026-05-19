@@ -5,8 +5,13 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-educomp-dev-key-change-in-production'
-DEBUG = True
-ALLOWED_HOSTS = ['*']
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.railway.app',
+    'https://easylearnv2-production.up.railway.app',
+]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
